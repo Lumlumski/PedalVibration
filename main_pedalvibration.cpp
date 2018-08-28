@@ -11,7 +11,7 @@ using namespace std;
 
 const static int UPS = 10;
 
-const static string PROJECT_NAME = "WheelSlipVibration";
+const static string PROJECT_NAME = "PedalVibration";
 const static string INI_FILE_PATH = "apps/python/" + PROJECT_NAME + "/";
 const static string INI_FILE_NAME = PROJECT_NAME + ".ini";
 

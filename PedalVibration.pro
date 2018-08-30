@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets
+QT       += core gui widgets serialport
 
 TARGET = PedalVibration
 TEMPLATE = app
@@ -24,10 +24,17 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    serialthread.cpp \
+    telemetryreader.cpp \
+    AssettoCorsaData.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    serialthread.h \
+    telemetryreader.h \
+    AssettoCorsaData.h \
+    SharedFileOut.h
 
 FORMS += \
         mainwindow.ui

@@ -1,11 +1,3 @@
-
-/* 
- * File:   AssettoCorsaData.h
- * Author: Simon Plum
- *
- * Created on 9. April 2018, 10:46
- */
-
 #ifndef ASSETTOCORSADATA_H
 #define ASSETTOCORSADATA_H
 

@@ -2,20 +2,39 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QtSerialPort/QSerialPortInfo>
+#include <QAction>
+#include <QMenu>
+#include <QFile>
+#include <QDir>
+#include <QIcon>
+#include <QTimer>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    (void)connect(&m_serialThread, &SerialThread::error, this, &MainWindow::onError);
+    (void)connect(&m_telemetryReader, &TelemetryReader::error, this, &MainWindow::onError);
+    (void)connect(&m_telemetryReader, &TelemetryReader::setStatus, this, &MainWindow::onSetStatus);
     (void)connect(&m_telemetryReader, &TelemetryReader::frontLeftStatusUpdated, this, &MainWindow::onFrontLeftStatusUpdated);
+    (void)connect(&m_telemetryReader, &TelemetryReader::frontRightStatusUpdated, this, &MainWindow::onFrontRightStatusUpdated);
+    (void)connect(&m_telemetryReader, &TelemetryReader::rearLeftStatusUpdated, this, &MainWindow::onRearLeftStatusUpdated);
+    (void)connect(&m_telemetryReader, &TelemetryReader::rearRightStatusUpdated, this, &MainWindow::onRearRightStatusUpdated);
 
-    ui->sendButton->setEnabled(false);
+    createActions();
+    createTrayIcon();
+
+    m_trayIcon->setIcon(QIcon("icon.png"));
+    m_trayIcon->show();
+    (void)connect(m_trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
+    (void)connect(m_trayIcon, &QSystemTrayIcon::messageClicked, this, &MainWindow::showWindow);
+
     setupSerialPortList();
 
     m_telemetryReader.setUpdatesPerSecond(5);
     m_telemetryReader.run();
+
+    showAppStartedMessage();
 }
 
 MainWindow::~MainWindow()
@@ -23,15 +42,65 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::setStatus(const QString &status)
+void MainWindow::hideEvent(QHideEvent * event)
 {
-    qDebug() << status;
-    ui->statusLabel->setText(status);
+    m_minimizeAction->trigger();
+    event->ignore();
+}
+
+void MainWindow::createActions()
+{
+    m_restoreAction = new QAction("Show window", this);
+    (void)connect(m_restoreAction, &QAction::triggered, this, &MainWindow::showNormal);
+
+    m_minimizeAction = new QAction("Minimize window", this);
+    (void)connect(m_minimizeAction, &QAction::triggered, this, &MainWindow::hide);
+
+    m_quitAction = new QAction("Quit", this);
+    (void)connect(m_quitAction, &QAction::triggered, this, &MainWindow::quit);
+}
+
+void MainWindow::createTrayIcon()
+{
+    m_trayIconMenu = new QMenu(this);
+    m_trayIconMenu->addAction(m_restoreAction);
+    m_trayIconMenu->addAction(m_minimizeAction);
+    m_trayIconMenu->addSeparator();
+    m_trayIconMenu->addAction(m_quitAction);
+
+    m_trayIcon = new QSystemTrayIcon(this);
+    m_trayIcon->setContextMenu(m_trayIconMenu);
+    m_trayIcon->setToolTip("Pedal vibration");
+}
+
+void MainWindow::showAppStartedMessage()
+{
+    m_trayIcon->showMessage("Pedal vibration", "Pedal vibration started in tray", m_trayIcon->icon(), 100);
+}
+
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason)
+    {
+        case QSystemTrayIcon::Trigger:
+        case QSystemTrayIcon::DoubleClick:
+            this->showWindow();
+            break;
+        default:
+            break;
+    }
+}
+
+void MainWindow::showWindow()
+{
+    m_restoreAction->trigger();
+    this->raise();
+    this->activateWindow();
 }
 
 void MainWindow::onError(const QString &error)
 {
-    setStatus("An error occured: " + error);
+    ui->statusLabel->setText("An error occured: " + error);
 }
 
 QStringList MainWindow::getAvailableSerialPorts()
@@ -40,7 +109,7 @@ QStringList MainWindow::getAvailableSerialPorts()
     QList<QSerialPortInfo> portList = QSerialPortInfo::availablePorts();
     for (qint32 i = 0; i < portList.size(); ++i)
     {
-        serialPorts.append(portList.at(i).portName());
+        serialPorts.append(portList.at(i).description() + " (" + portList.at(i).portName() + ")");
     }
 
     return serialPorts;
@@ -72,6 +141,8 @@ void MainWindow::refreshSerialPortList()
     QStringList newSerialPortList = getAvailableSerialPorts();
     qDebug() << newSerialPortList;
 
+    m_port.clear();
+
     if (newSerialPortList.isEmpty())
     {
         m_selectedSerialPortIndex = -1;
@@ -83,43 +154,77 @@ void MainWindow::refreshSerialPortList()
 
     ui->portsComboBox->setEnabled(true);
 
-    QString selectedPort;
     if (m_selectedSerialPortIndex != -1)
     {
-        selectedPort = m_serialPorts.at(m_selectedSerialPortIndex);
-        qDebug() << "selectedPort: " << selectedPort;
+        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
     }
 
     ui->portsComboBox->clear();
 
-    if (!selectedPort.isEmpty())
+    if (!m_port.isEmpty())
     {
-        qint32 newIndex = newSerialPortList.indexOf(selectedPort);
-        qDebug() << "newIndex: " << newIndex;
-
+        qint32 newIndex = newSerialPortList.indexOf(m_port);
         if (newIndex == -1)
         {
             m_selectedSerialPortIndex = -1;
             ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+            m_port.clear();
             return;
         }
 
-        qDebug() << "m_selectedSerialPortIndex = newIndex (" << newIndex << ")";
         m_selectedSerialPortIndex = newIndex;
     }
 
     m_serialPorts = newSerialPortList;
 
     ui->portsComboBox->addItems(m_serialPorts);
-    qDebug() << "selected: " << m_selectedSerialPortIndex;
     ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+    m_port = m_serialPorts.at(m_selectedSerialPortIndex);
 
     // If no port was selected before, select the first one by default
     if (m_selectedSerialPortIndex == -1)
     {
         m_selectedSerialPortIndex = 0;
         ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
     }
+}
+
+void MainWindow::onSetStatus(const AC_STATUS &status)
+{
+    QString statusText;
+    switch (status)
+    {
+    case AC_OFF:
+        qDebug() << "Status changed: OFF";
+        statusText = "acs.exe is not running";
+        clearWheelSlipIndicators();
+        break;
+    case AC_REPLAY:
+        qDebug() << "Status changed: REPLAY";
+        statusText = "Replay running";
+        clearWheelSlipIndicators();
+        break;
+    case AC_LIVE:
+        qDebug() << "Status changed: LIVE";
+        statusText = "Live! Sending telemetry data";
+        break;
+    case AC_PAUSE:
+        qDebug() << "Status changed: PAUSE";
+        statusText = "Game is paused";
+        clearWheelSlipIndicators();
+        break;
+    }
+
+    ui->statusLabel->setText(statusText);
+}
+
+void MainWindow::clearWheelSlipIndicators()
+{
+    ui->frontLeftLineEdit->setText("--");
+    ui->frontRightLineEdit->setText("--");
+    ui->rearLeftLineEdit->setText("--");
+    ui->rearRightLineEdit->setText("--");
 }
 
 void MainWindow::onFrontLeftStatusUpdated(WheelSlipStatus status)
@@ -218,37 +323,25 @@ void MainWindow::onRearRightStatusUpdated(WheelSlipStatus status)
     }
 }
 
-void MainWindow::on_sendButton_clicked()
+void MainWindow::onSendData(const QByteArray &data)
 {
-    QString text = ui->lineEdit->text();
-    if (text.isEmpty() || (m_selectedSerialPortIndex < 0) || (m_selectedSerialPortIndex >= m_serialPorts.size()))
+    if (m_port.isEmpty())
     {
         return;
     }
 
-    QString port = m_serialPorts.at(m_selectedSerialPortIndex);
-    if (port.isEmpty())
-    {
-        return;
-    }
-
-    m_serialThread.transaction(port, text.toUtf8());
-}
-
-void MainWindow::on_lineEdit_textChanged(const QString &text)
-{
-    bool textExists = !text.isEmpty();
-    if (ui->sendButton->isEnabled() != textExists)
-    {
-        ui->sendButton->setEnabled(textExists);
-    }
+    m_serialThread.transaction(m_port, data);
 }
 
 void MainWindow::on_portsComboBox_currentIndexChanged(int index)
 {
     if (m_selectedSerialPortIndex != index)
     {
-        qDebug() << "Selected index:" << index;
         m_selectedSerialPortIndex = index;
     }
+}
+
+void MainWindow::on_minimizeWindowCheckBox_clicked(bool checked)
+{
+    Q_UNUSED(checked)
 }

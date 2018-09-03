@@ -57,10 +57,13 @@ public:
     void setUpdatesPerSecond(qint32 ups);
 
 Q_SIGNALS:
+    void setStatus(const AC_STATUS &status);
     void frontLeftStatusUpdated(WheelSlipStatus status);
     void frontRightStatusUpdated(WheelSlipStatus status);
     void rearLeftStatusUpdated(WheelSlipStatus status);
     void rearRightStatusUpdated(WheelSlipStatus status);
+    void error(const QString &error);
+    void sendData(const QByteArray &data);
 
 private Q_SLOTS:
     void readData();
@@ -70,6 +73,8 @@ private:
     WheelValueFloat getCalculatedSpeed();
     float calculateSpeed(float tyreRadius, float wheelAngularSpeed);
     WheelSlipStatus getSlipStatus(float slipValue, float calculatedSpeed);
+    bool dataChanged();
+    void sendData();
 
     QTimer m_readTimer;
     qint32 m_standbyInterval;
@@ -83,8 +88,15 @@ private:
     const float GAS_INDEX = 1.08f;
     float m_speed;
 
-    qint32 m_lastSerialData[8];
-    qint32 m_serialData[8];
+    WheelSlipStatus m_oldFrontLeftSlipStatus = NotSlipping;
+    WheelSlipStatus m_oldFrontRightSlipStatus = NotSlipping;
+    WheelSlipStatus m_oldRearLeftSlipStatus = NotSlipping;
+    WheelSlipStatus m_oldRearRightSlipStatus = NotSlipping;
+
+    QChar m_serialData[8];
+    QChar m_lastSerialData[8];
+    //QByteArray m_serialData;
+    //QByteArray m_lastSerialData;
 
 };
 

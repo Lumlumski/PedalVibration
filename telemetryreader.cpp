@@ -1,6 +1,9 @@
 #include "telemetryreader.h"
 #include <QDebug>
 #include <QtMath>
+#include <QString>
+#include <QChar>
+#include <QProcess>
 
 TelemetryReader::TelemetryReader(QObject *parent)
     : QObject(parent)
@@ -47,24 +50,37 @@ void TelemetryReader::setUpdatesPerSecond(qint32 ups)
 void TelemetryReader::readData()
 {
     m_acData.update();
+
     AC_STATUS status = m_acData.getStatus();
-    if ((status == AC_OFF) && (m_lastStatus != AC_OFF))
+    if (status != m_lastStatus)
     {
-        m_readTimer.setInterval(m_standbyInterval);
+        Q_EMIT setStatus(status);
+
+        if (m_lastStatus == AC_LIVE)
+        {
+            m_readTimer.setInterval(m_standbyInterval);
+            m_lastStatus = status;
+            return;
+        }
+        else if (status == AC_LIVE)
+        {
+            if (m_liveInterval > 0)
+            {
+                m_readTimer.setInterval(m_liveInterval);
+            }
+
+            Q_EMIT frontLeftStatusUpdated(WheelSlipStatus::NotSlipping);
+            Q_EMIT frontRightStatusUpdated(WheelSlipStatus::NotSlipping);
+            Q_EMIT rearLeftStatusUpdated(WheelSlipStatus::NotSlipping);
+            Q_EMIT rearRightStatusUpdated(WheelSlipStatus::NotSlipping);
+        }
+
         m_lastStatus = status;
-        return;
     }
-    else if ((status == AC_LIVE) && (m_lastStatus != AC_LIVE) && (m_liveInterval > 0))
+    else if (status != AC_LIVE)
     {
-        m_readTimer.setInterval(m_liveInterval);
-    }
-
-    m_lastStatus = status;
-
-    if (status != AC_LIVE)
-    {
-        qDebug() << "Not live";
-        m_readTimer.setInterval(m_standbyInterval);
+        // Status did not change and is not AC_LIVE
+        // Do nothing
         return;
     }
 
@@ -119,6 +135,12 @@ void TelemetryReader::readData()
         break;
     }
 
+    if (m_oldFrontLeftSlipStatus != frontLeftSlipStatus)
+    {
+        Q_EMIT frontLeftStatusUpdated(frontLeftSlipStatus);
+        m_oldFrontLeftSlipStatus = frontLeftSlipStatus;
+    }
+
     switch (frontRightSlipStatus)
     {
     case SlippingFromBraking:
@@ -135,6 +157,12 @@ void TelemetryReader::readData()
         m_serialData[2] = 0;
         m_serialData[3] = 0;
         break;
+    }
+
+    if (m_oldFrontRightSlipStatus != frontRightSlipStatus)
+    {
+        Q_EMIT frontRightStatusUpdated(frontRightSlipStatus);
+        m_oldFrontRightSlipStatus = frontRightSlipStatus;
     }
 
     switch (rearLeftSlipStatus)
@@ -155,6 +183,12 @@ void TelemetryReader::readData()
         break;
     }
 
+    if (m_oldRearLeftSlipStatus != rearLeftSlipStatus)
+    {
+        Q_EMIT rearLeftStatusUpdated(rearLeftSlipStatus);
+        m_oldRearLeftSlipStatus = rearLeftSlipStatus;
+    }
+
     switch (rearRightSlipStatus)
     {
     case SlippingFromBraking:
@@ -173,37 +207,25 @@ void TelemetryReader::readData()
         break;
     }
 
-    // Let everything vibrate if bumping was detected
+    if (m_oldRearRightSlipStatus != rearRightSlipStatus)
+    {
+        Q_EMIT rearRightStatusUpdated(rearRightSlipStatus);
+        m_oldRearRightSlipStatus = rearRightSlipStatus;
+    }
+
+    // Let everything vibrate a bit if bumping was detected
     if (bumping)
     {
-        for (int i = 0; i < 8; ++i)
+        for (qint32 i = 0; i < 8; ++i)
         {
             if (m_serialData[i] < 3) m_serialData[i] = 3;
         }
     }
 
     // Only send if something has changed
-    if (( m_serialData[0] != m_lastSerialData[0])
-            || ( m_serialData[1] != m_lastSerialData[1])
-            || ( m_serialData[2] != m_lastSerialData[2])
-            || ( m_serialData[3] != m_lastSerialData[3])
-            || ( m_serialData[4] != m_lastSerialData[4])
-            || ( m_serialData[5] != m_lastSerialData[5])
-            || ( m_serialData[6] != m_lastSerialData[6])
-            || ( m_serialData[7] != m_lastSerialData[7]))
+    if (dataChanged())
     {
-        // TODO do send
-        //sendSerial( m_serialData);
-        qDebug() << "Sending these values:";
-        QDebug debug = qDebug();
-        debug << "[";
-        for (qint32 i = 0; i < 8; ++i)
-        {
-            debug << m_serialData[i];
-            if (i < 7) debug << ", ";
-        }
-
-        debug << "]";
+        sendData();
     }
 
     // Save current values for comparison with future values
@@ -211,6 +233,19 @@ void TelemetryReader::readData()
     {
         m_lastSerialData[i] = m_serialData[i];
     }
+}
+
+bool TelemetryReader::dataChanged()
+{
+    for (qint32 i = 0; i < 8; ++i)
+    {
+        if (m_serialData[i] != m_lastSerialData[i])
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 WheelValueInt TelemetryReader::getWheelSlip()
@@ -221,11 +256,11 @@ WheelValueInt TelemetryReader::getWheelSlip()
     slip.rearLeft = static_cast<qint32>(m_acData.getWheelSlip(Wheel::RearLeft));
     slip.rearRight = static_cast<qint32>(m_acData.getWheelSlip(Wheel::RearRight));
 
-    // Set cap to 255
-    if (slip.frontLeft > 255) slip.frontLeft = 255;
-    if (slip.frontRight > 255) slip.frontRight = 255;
-    if (slip.rearLeft > 255) slip.rearLeft = 255;
-    if (slip.rearRight > 255) slip.rearRight = 255;
+    // Be sure to stay between 0 and 255
+    slip.frontLeft = qBound(0, slip.frontLeft, 255);
+    slip.frontRight = qBound(0, slip.frontRight, 255);
+    slip.rearLeft = qBound(0, slip.rearLeft, 255);
+    slip.rearRight = qBound(0, slip.rearRight, 255);
 
     return slip;
 }
@@ -265,4 +300,16 @@ WheelSlipStatus TelemetryReader::getSlipStatus(float slipValue, float calculated
 
     qDebug() << "Not slipping";
     return NotSlipping;
+}
+
+void TelemetryReader::sendData()
+{
+    QByteArray data;
+    for (qint32 i = 0; i < 8; ++i)
+    {
+        data.append(QChar(m_serialData[i]));
+    }
+
+    qDebug() << "Sending buffer: " << data;
+    Q_EMIT sendData(data);
 }

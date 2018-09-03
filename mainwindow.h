@@ -13,6 +13,35 @@ namespace Ui {
 class MainWindow;
 }
 
+struct Port
+{
+    QString portName;
+    QString description;
+
+    Port(){}
+
+    Port(const QString &name, const QString &desc)
+    {
+        portName = name;
+        description = desc;
+    }
+
+    QString getDesignator()
+    {
+        return QString(description + " (" + portName + ")");
+    }
+
+    bool isEmpty()
+    {
+        return portName.isEmpty();
+    }
+
+    bool operator==(const Port &other)
+    {
+        return (portName == other.portName);
+    }
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -43,11 +72,15 @@ private Q_SLOTS:
     void on_upsSpinBox_valueChanged(int ups);
 
 private:
+    void setupTelemetyReader();
+    void setupTrayIcon();
+    void setupSerialPortList();
+    void readSettings();
+
     void hideEvent(QHideEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
 
-    QStringList getAvailableSerialPorts();
-    void setupSerialPortList();
+    QList<Port> getAvailableSerialPorts();
     void refreshSerialPortList();
     void clearWheelSlipIndicators();
 
@@ -55,20 +88,21 @@ private:
     void createTrayIcon();
     void showAppStartedMessage();
 
+    Ui::MainWindow *ui;
+    SerialThread m_serialThread;
+    TelemetryReader m_telemetryReader;
+
     QSystemTrayIcon *m_trayIcon;
     QMenu *m_trayIconMenu;
-
     QAction *m_minimizeAction;
     QAction *m_maximizeAction;
     QAction *m_restoreAction;
     QAction *m_quitAction;
 
-    Ui::MainWindow *ui;
-    SerialThread m_serialThread;
+    bool m_initializing;
     qint32 m_selectedSerialPortIndex = -1;
-    QString m_port;
-    QList<QString> m_serialPorts;
-    TelemetryReader m_telemetryReader;
+    Port m_port;
+    QList<Port> m_serialPorts;
 
 };
 

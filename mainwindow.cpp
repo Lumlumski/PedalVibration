@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QIcon>
 #include <QTimer>
+#include "settings.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -31,7 +32,29 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupSerialPortList();
 
-    m_telemetryReader.setUpdatesPerSecond(5);
+    Settings* settings = Settings::getInstance();
+    qint32 ups = settings->getUps();
+    qDebug() << "UPS from settings: " << ups;
+
+    if (ups > 0 && ups <= 120)
+    {
+        ui->upsSpinBox->setValue(ups);
+    }
+    else
+    {
+        ups = 1;
+    }
+
+    if (settings->getMinimizeWithX())
+    {
+        ui->minimizeWindowCheckBox->setCheckState(Qt::CheckState::Checked);
+    }
+    else
+    {
+        ui->minimizeWindowCheckBox->setCheckState(Qt::CheckState::Unchecked);
+    }
+
+    m_telemetryReader.setUpdatesPerSecond(ups);
     m_telemetryReader.run();
 
     showAppStartedMessage();
@@ -46,6 +69,15 @@ void MainWindow::hideEvent(QHideEvent * event)
 {
     m_minimizeAction->trigger();
     event->ignore();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (Settings::getInstance()->getMinimizeWithX())
+    {
+        m_minimizeAction->trigger();
+        event->ignore();
+    }
 }
 
 void MainWindow::createActions()
@@ -130,6 +162,20 @@ void MainWindow::setupSerialPortList()
     ui->portsComboBox->setEnabled(true);
     m_serialPorts = serialPortList;
     ui->portsComboBox->addItems(m_serialPorts);
+
+    QString port = Settings::getInstance()->getPort();
+    qDebug() << "Saved port: " << port;
+    for (qint32 i = 0; i < m_serialPorts.size(); ++i)
+    {
+        qDebug() << "Current port in list: " << m_serialPorts.at(i);
+        if (m_serialPorts.at(i) == port)
+        {
+            qDebug() << "MATCH! Settings this port";
+            m_selectedSerialPortIndex = i;
+            ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+            return;
+        }
+    }
 
     m_selectedSerialPortIndex = 0;
     ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
@@ -338,10 +384,25 @@ void MainWindow::on_portsComboBox_currentIndexChanged(int index)
     if (m_selectedSerialPortIndex != index)
     {
         m_selectedSerialPortIndex = index;
+        QString port = m_serialPorts.at(m_selectedSerialPortIndex);
+        qDebug() << "Settings port: " << port;
+        Settings::getInstance()->setPort(port);
     }
 }
 
 void MainWindow::on_minimizeWindowCheckBox_clicked(bool checked)
 {
-    Q_UNUSED(checked)
+    Settings::getInstance()->setMinimizeWithX(checked);
+}
+
+void MainWindow::on_upsSpinBox_valueChanged(int ups)
+{
+    if (ups > 0 && ups <= 120)
+    {
+        Settings::getInstance()->setUps(ups);
+    }
+    else
+    {
+        ui->upsSpinBox->setValue(1);
+    }
 }

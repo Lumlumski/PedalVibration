@@ -7,6 +7,7 @@
 #include <QCloseEvent>
 #include <QSystemTrayIcon>
 #include "telemetryreader.h"
+#include "settings.h"
 
 namespace Ui {
 class MainWindow;
@@ -39,8 +40,11 @@ private Q_SLOTS:
     void on_portsComboBox_currentIndexChanged(int index);
     void on_minimizeWindowCheckBox_clicked(bool checked);
 
+    void on_upsSpinBox_valueChanged(int ups);
+
 private:
     void hideEvent(QHideEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 
     QStringList getAvailableSerialPorts();
     void setupSerialPortList();

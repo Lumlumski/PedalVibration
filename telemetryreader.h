@@ -95,8 +95,6 @@ private:
 
     QChar m_serialData[8];
     QChar m_lastSerialData[8];
-    //QByteArray m_serialData;
-    //QByteArray m_lastSerialData;
 
 };
 

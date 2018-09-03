@@ -8,19 +8,42 @@
 #include <QDir>
 #include <QIcon>
 #include <QTimer>
+#include "settings.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_initializing(true)
 {
     ui->setupUi(this);
+    setupTelemetyReader();
+    setupTrayIcon();
+    readSettings();
+    setupSerialPortList();
+
+    m_telemetryReader.run();
+    showAppStartedMessage();
+    m_initializing = false;
+}
+
+MainWindow::~MainWindow()
+{
+    disconnect(this);
+    delete ui;
+}
+
+void MainWindow::setupTelemetyReader()
+{
     (void)connect(&m_telemetryReader, &TelemetryReader::error, this, &MainWindow::onError);
     (void)connect(&m_telemetryReader, &TelemetryReader::setStatus, this, &MainWindow::onSetStatus);
     (void)connect(&m_telemetryReader, &TelemetryReader::frontLeftStatusUpdated, this, &MainWindow::onFrontLeftStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::frontRightStatusUpdated, this, &MainWindow::onFrontRightStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::rearLeftStatusUpdated, this, &MainWindow::onRearLeftStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::rearRightStatusUpdated, this, &MainWindow::onRearRightStatusUpdated);
+}
 
+void MainWindow::setupTrayIcon()
+{
     createActions();
     createTrayIcon();
 
@@ -28,24 +51,42 @@ MainWindow::MainWindow(QWidget *parent)
     m_trayIcon->show();
     (void)connect(m_trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
     (void)connect(m_trayIcon, &QSystemTrayIcon::messageClicked, this, &MainWindow::showWindow);
-
-    setupSerialPortList();
-
-    m_telemetryReader.setUpdatesPerSecond(5);
-    m_telemetryReader.run();
-
-    showAppStartedMessage();
 }
 
-MainWindow::~MainWindow()
+void MainWindow::readSettings()
 {
-    delete ui;
+    Settings* settings = Settings::getInstance();
+
+    // UPS
+    qint32 ups = qBound(0, settings->getUps(), 120);
+    qDebug() << "Setting update rate:" << ups << "ups";
+    ui->upsSpinBox->setValue(ups);
+    m_telemetryReader.setUpdatesPerSecond(ups);
+
+    // Minimize with X
+    if (settings->getMinimizeWithX())
+    {
+        ui->minimizeWindowCheckBox->setCheckState(Qt::CheckState::Checked);
+    }
+    else
+    {
+        ui->minimizeWindowCheckBox->setCheckState(Qt::CheckState::Unchecked);
+    }
 }
 
 void MainWindow::hideEvent(QHideEvent * event)
 {
     m_minimizeAction->trigger();
     event->ignore();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (Settings::getInstance()->getMinimizeWithX())
+    {
+        m_minimizeAction->trigger();
+        event->ignore();
+    }
 }
 
 void MainWindow::createActions()
@@ -103,13 +144,13 @@ void MainWindow::onError(const QString &error)
     ui->statusLabel->setText("An error occured: " + error);
 }
 
-QStringList MainWindow::getAvailableSerialPorts()
+QList<Port> MainWindow::getAvailableSerialPorts()
 {
-    QStringList serialPorts;
+    QList<Port> serialPorts;
     QList<QSerialPortInfo> portList = QSerialPortInfo::availablePorts();
     for (qint32 i = 0; i < portList.size(); ++i)
-    {
-        serialPorts.append(portList.at(i).description() + " (" + portList.at(i).portName() + ")");
+    {   
+        serialPorts.append(Port(portList.at(i).portName(), portList.at(i).description()));
     }
 
     return serialPorts;
@@ -117,7 +158,7 @@ QStringList MainWindow::getAvailableSerialPorts()
 
 void MainWindow::setupSerialPortList()
 {
-    QStringList serialPortList = getAvailableSerialPorts();
+    QList<Port> serialPortList = getAvailableSerialPorts();
     if (serialPortList.isEmpty())
     {
         m_selectedSerialPortIndex = -1;
@@ -129,66 +170,78 @@ void MainWindow::setupSerialPortList()
 
     ui->portsComboBox->setEnabled(true);
     m_serialPorts = serialPortList;
-    ui->portsComboBox->addItems(m_serialPorts);
-
-    m_selectedSerialPortIndex = 0;
-    ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
-}
-
-void MainWindow::refreshSerialPortList()
-{
-    qDebug() << "Refreshing serial port list";
-    QStringList newSerialPortList = getAvailableSerialPorts();
-    qDebug() << newSerialPortList;
-
-    m_port.clear();
-
-    if (newSerialPortList.isEmpty())
+    QString port = Settings::getInstance()->getPort();
+    for (qint32 i = 0; i < m_serialPorts.size(); ++i)
     {
-        m_selectedSerialPortIndex = -1;
-        m_serialPorts.clear();
-        ui->portsComboBox->clear();
-        ui->portsComboBox->setEnabled(false);
-        return;
-    }
-
-    ui->portsComboBox->setEnabled(true);
-
-    if (m_selectedSerialPortIndex != -1)
-    {
-        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
-    }
-
-    ui->portsComboBox->clear();
-
-    if (!m_port.isEmpty())
-    {
-        qint32 newIndex = newSerialPortList.indexOf(m_port);
-        if (newIndex == -1)
+        ui->portsComboBox->addItem(m_serialPorts[i].getDesignator());
+        if (m_serialPorts[i].portName == port)
         {
-            m_selectedSerialPortIndex = -1;
-            ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
-            m_port.clear();
-            return;
+            m_selectedSerialPortIndex = i;
         }
-
-        m_selectedSerialPortIndex = newIndex;
     }
 
-    m_serialPorts = newSerialPortList;
-
-    ui->portsComboBox->addItems(m_serialPorts);
-    ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
-    m_port = m_serialPorts.at(m_selectedSerialPortIndex);
-
-    // If no port was selected before, select the first one by default
     if (m_selectedSerialPortIndex == -1)
     {
         m_selectedSerialPortIndex = 0;
-        ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
-        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
     }
+
+    ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
 }
+
+//void MainWindow::refreshSerialPortList()
+//{
+//    qDebug() << "Refreshing serial port list";
+//    QList<Port> newSerialPortList = getAvailableSerialPorts();
+//    qDebug() << newSerialPortList;
+
+//    m_port.clear();
+
+//    if (newSerialPortList.isEmpty())
+//    {
+//        m_selectedSerialPortIndex = -1;
+//        m_serialPorts.clear();
+//        ui->portsComboBox->clear();
+//        ui->portsComboBox->setEnabled(false);
+//        return;
+//    }
+
+//    ui->portsComboBox->setEnabled(true);
+
+//    if (m_selectedSerialPortIndex != -1)
+//    {
+//        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
+//    }
+
+//    ui->portsComboBox->clear();
+
+//    if (!m_port.isEmpty())
+//    {
+//        qint32 newIndex = newSerialPortList.indexOf(m_port);
+//        if (newIndex == -1)
+//        {
+//            m_selectedSerialPortIndex = -1;
+//            ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+//            m_port.clear();
+//            return;
+//        }
+
+//        m_selectedSerialPortIndex = newIndex;
+//    }
+
+//    m_serialPorts = newSerialPortList;
+
+//    ui->portsComboBox->addItems(m_serialPorts);
+//    ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+//    m_port = m_serialPorts.at(m_selectedSerialPortIndex);
+
+//    // If no port was selected before, select the first one by default
+//    if (m_selectedSerialPortIndex == -1)
+//    {
+//        m_selectedSerialPortIndex = 0;
+//        ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+//        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
+//    }
+//}
 
 void MainWindow::onSetStatus(const AC_STATUS &status)
 {
@@ -330,18 +383,32 @@ void MainWindow::onSendData(const QByteArray &data)
         return;
     }
 
-    m_serialThread.transaction(m_port, data);
+    m_serialThread.transaction(m_port.portName, data);
 }
 
 void MainWindow::on_portsComboBox_currentIndexChanged(int index)
 {
-    if (m_selectedSerialPortIndex != index)
+    if ((m_selectedSerialPortIndex != index) && (!m_initializing))
     {
         m_selectedSerialPortIndex = index;
+        Port port = m_serialPorts.at(m_selectedSerialPortIndex);
+        qDebug() << "Selected port: " << port.getDesignator();
+        Settings::getInstance()->setPort(port.portName);
     }
 }
 
 void MainWindow::on_minimizeWindowCheckBox_clicked(bool checked)
 {
-    Q_UNUSED(checked)
+    qDebug() << "Minimize with X:" << checked;
+    Settings::getInstance()->setMinimizeWithX(checked);
+}
+
+void MainWindow::on_upsSpinBox_valueChanged(int ups)
+{
+    qint32 upsInBounds = qBound(0, ups, 120);
+    Settings::getInstance()->setUps(upsInBounds);
+    if (ups != upsInBounds)
+    {
+        ui->upsSpinBox->setValue(upsInBounds);
+    }
 }

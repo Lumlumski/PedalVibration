@@ -44,7 +44,6 @@ void TelemetryReader::setUpdatesPerSecond(qint32 ups)
 {
     double ms = 1000.0 / static_cast<double>(ups);
     m_liveInterval = qRound(ms + 0.5); // Round up
-    qDebug() << "Setting" << ups << "UPS =" << m_liveInterval << "ms";
 }
 
 void TelemetryReader::readData()

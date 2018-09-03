@@ -27,14 +27,16 @@ SOURCES += \
         mainwindow.cpp \
     serialthread.cpp \
     telemetryreader.cpp \
-    AssettoCorsaData.cpp
+    AssettoCorsaData.cpp \
+    settings.cpp
 
 HEADERS += \
         mainwindow.h \
     serialthread.h \
     telemetryreader.h \
     AssettoCorsaData.h \
-    SharedFileOut.h
+    SharedFileOut.h \
+    settings.h
 
 FORMS += \
         mainwindow.ui

@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_initializing(true)
 {
     ui->setupUi(this);
+    ui->bumpingLabel->setVisible(false);
+    ui->tabWidget->setCurrentIndex(0);
     setupTelemetyReader();
     setupTrayIcon();
     readSettings();

@@ -17,7 +17,7 @@ SerialThread::~SerialThread()
     wait();
 }
 
-void SerialThread::transaction(const QString &portName, const QString &request)
+void SerialThread::transaction(const QString &portName, const QByteArray &request)
 {
     const QMutexLocker locker(&m_mutex);
     m_portName = portName;
@@ -46,7 +46,7 @@ void SerialThread::run()
     }
 
     //int currentWaitTimeout = m_waitTimeout;
-    QString currentRequest = m_request;
+    QByteArray currentRequest = m_request;
     m_mutex.unlock();
     QSerialPort serial;
 
@@ -70,7 +70,7 @@ void SerialThread::run()
             }
         }
         // write request
-        const QByteArray requestData = currentRequest.toUtf8();
+        const QByteArray requestData = currentRequest;
         serial.write(requestData);
 
 //        if (serial.waitForBytesWritten(m_waitTimeout))

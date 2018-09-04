@@ -12,7 +12,7 @@ public:
     explicit SerialThread(QObject* parent = nullptr);
     ~SerialThread() override;
 
-    void transaction(const QString &portName, const QString &request);
+    void transaction(const QString &portName, const QByteArray &request);
 
 Q_SIGNALS:
     void error(const QString &s);
@@ -21,7 +21,7 @@ private:
     void run() override;
 
     QString m_portName;
-    QString m_request;
+    QByteArray m_request;
     QMutex m_mutex;
     QWaitCondition m_cond;
     bool m_quit = false;

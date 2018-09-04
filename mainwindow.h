@@ -67,10 +67,11 @@ private Q_SLOTS:
     void showWindow();
 
     void onError(const QString &error);
-    void on_portsComboBox_currentIndexChanged(int index);
+    void on_wheelSlipPortComboBox_currentIndexChanged(int index);
     void on_minimizeWindowCheckBox_clicked(bool checked);
-
     void on_upsSpinBox_valueChanged(int ups);
+    void on_enableWheelSlipCheckBox_clicked(bool checked);
+    void on_enableLedFlagCheckBox_clicked(bool checked);
 
 private:
     void setupTelemetyReader();
@@ -84,6 +85,9 @@ private:
     QList<Port> getAvailableSerialPorts();
     void refreshSerialPortList();
     void clearWheelSlipIndicators();
+
+    void showWheelSlipPage(bool show);
+    void showLedFlagPage(bool show);
 
     void createActions();
     void createTrayIcon();

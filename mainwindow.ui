@@ -30,17 +30,17 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="tab_wheelSlip">
      <attribute name="title">
-      <string>Wheel slip detection</string>
+      <string>Wheel Slip Detection</string>
      </attribute>
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
         <x>36</x>
-        <y>66</y>
+        <y>93</y>
         <width>111</width>
         <height>16</height>
        </rect>
@@ -53,7 +53,7 @@
       <property name="geometry">
        <rect>
         <x>36</x>
-        <y>86</y>
+        <y>113</y>
         <width>113</width>
         <height>20</height>
        </rect>
@@ -72,7 +72,7 @@
       <property name="geometry">
        <rect>
         <x>216</x>
-        <y>66</y>
+        <y>93</y>
         <width>111</width>
         <height>16</height>
        </rect>
@@ -85,7 +85,7 @@
       <property name="geometry">
        <rect>
         <x>216</x>
-        <y>86</y>
+        <y>113</y>
         <width>113</width>
         <height>20</height>
        </rect>
@@ -104,7 +104,7 @@
       <property name="geometry">
        <rect>
         <x>216</x>
-        <y>136</y>
+        <y>163</y>
         <width>111</width>
         <height>16</height>
        </rect>
@@ -117,7 +117,7 @@
       <property name="geometry">
        <rect>
         <x>36</x>
-        <y>136</y>
+        <y>163</y>
         <width>111</width>
         <height>16</height>
        </rect>
@@ -130,7 +130,7 @@
       <property name="geometry">
        <rect>
         <x>216</x>
-        <y>156</y>
+        <y>183</y>
         <width>113</width>
         <height>20</height>
        </rect>
@@ -149,7 +149,7 @@
       <property name="geometry">
        <rect>
         <x>36</x>
-        <y>156</y>
+        <y>183</y>
         <width>113</width>
         <height>20</height>
        </rect>
@@ -164,11 +164,11 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QComboBox" name="portsComboBox">
+     <widget class="QComboBox" name="wheelSlipPortComboBox">
       <property name="geometry">
        <rect>
         <x>92</x>
-        <y>22</y>
+        <y>45</y>
         <width>211</width>
         <height>22</height>
        </rect>
@@ -178,7 +178,7 @@
       <property name="geometry">
        <rect>
         <x>23</x>
-        <y>22</y>
+        <y>45</y>
         <width>61</width>
         <height>20</height>
        </rect>
@@ -194,7 +194,7 @@
       <property name="geometry">
        <rect>
         <x>143</x>
-        <y>118</y>
+        <y>145</y>
         <width>81</width>
         <height>20</height>
        </rect>
@@ -206,8 +206,65 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
+     <widget class="QCheckBox" name="enableWheelSlipCheckBox">
+      <property name="geometry">
+       <rect>
+        <x>13</x>
+        <y>14</y>
+        <width>351</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Enable Wheel Slip Detection</string>
+      </property>
+     </widget>
     </widget>
-    <widget class="QWidget" name="tab">
+    <widget class="QWidget" name="tab_ledFlag">
+     <attribute name="title">
+      <string>LED Flag</string>
+     </attribute>
+     <widget class="QComboBox" name="ledFlagPortComboBox">
+      <property name="geometry">
+       <rect>
+        <x>92</x>
+        <y>45</y>
+        <width>211</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="ledFlagPortLabel">
+      <property name="geometry">
+       <rect>
+        <x>23</x>
+        <y>45</y>
+        <width>61</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>COM-Port</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="enableLedFlagCheckBox">
+      <property name="geometry">
+       <rect>
+        <x>13</x>
+        <y>14</y>
+        <width>351</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Enable LED Flag</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_settings">
      <attribute name="title">
       <string>Settings</string>
      </attribute>

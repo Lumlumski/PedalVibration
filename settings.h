@@ -12,8 +12,17 @@ public:
 
     void loadSettings();
 
-    QString getPort() const;
-    void setPort(const QString &port);
+    bool getWheelSlipEnabled() const;
+    void setWheelSlipEnabled(bool wheelSlipEnabled);
+
+    bool getLedFlagEnabled() const;
+    void setLedFlagEnabled(bool ledFlagEnabled);
+
+    QString getWheelSlipPort() const;
+    void setWheelSlipPort(const QString &port);
+
+    QString getLedFlagPort() const;
+    void setLedFlagPort(const QString &ledFlagPort);
 
     qint32 getUps() const;
     void setUps(const qint32 &ups);
@@ -22,14 +31,18 @@ public:
     void setMinimizeWithX(bool minimizeWithX);
 
 Q_SIGNALS:
-    void portChanged();
+    void wheelSlipPortChanged();
+    void ledFlagPortChanged();
     void upsChanged();
     void minimizeWithXChanged();
 
 private:
     explicit Settings(QObject* parent = nullptr);
 
-    QString m_port;
+    bool m_wheelSlipEnabled;
+    bool m_ledFlagEnabled;
+    QString m_wheelSlipPort;
+    QString m_ledFlagPort;
     qint32 m_ups;
     bool m_minimizeWithX;
 };

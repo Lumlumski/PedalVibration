@@ -60,6 +60,30 @@ void MainWindow::readSettings()
 {
     Settings* settings = Settings::getInstance();
 
+    // Wheel slip detection enabled
+    if (settings->getWheelSlipEnabled())
+    {
+        ui->enableWheelSlipCheckBox->setCheckState(Qt::CheckState::Checked);
+        showWheelSlipPage(true);
+    }
+    else
+    {
+        ui->enableWheelSlipCheckBox->setCheckState(Qt::CheckState::Unchecked);
+        showWheelSlipPage(false);
+    }
+
+    // LED Flag enabled
+    if (settings->getLedFlagEnabled())
+    {
+        ui->enableLedFlagCheckBox->setCheckState(Qt::CheckState::Checked);
+        showLedFlagPage(true);
+    }
+    else
+    {
+        ui->enableLedFlagCheckBox->setCheckState(Qt::CheckState::Unchecked);
+        showLedFlagPage(false);
+    }
+
     // UPS
     qint32 ups = qBound(0, settings->getUps(), 120);
     qDebug() << "Setting update rate:" << ups << "ups";
@@ -166,17 +190,20 @@ void MainWindow::setupSerialPortList()
     {
         m_selectedSerialPortIndex = -1;
         m_serialPorts.clear();
-        ui->portsComboBox->clear();
-        ui->portsComboBox->setEnabled(false);
+        ui->wheelSlipPortComboBox->clear();
+        ui->wheelSlipPortComboBox->setEnabled(false);
+        ui->ledFlagPortComboBox->clear();
+        ui->ledFlagPortComboBox->setEnabled(false);
         return;
     }
 
-    ui->portsComboBox->setEnabled(true);
     m_serialPorts = serialPortList;
-    QString port = Settings::getInstance()->getPort();
+    QString port = Settings::getInstance()->getWheelSlipPort();
     for (qint32 i = 0; i < m_serialPorts.size(); ++i)
     {
-        ui->portsComboBox->addItem(m_serialPorts[i].getDesignator());
+        QString portEntry = m_serialPorts[i].getDesignator();
+        ui->wheelSlipPortComboBox->addItem(portEntry);
+        ui->ledFlagPortComboBox->addItem(portEntry);
         if (m_serialPorts[i].portName == port)
         {
             m_selectedSerialPortIndex = i;
@@ -188,7 +215,7 @@ void MainWindow::setupSerialPortList()
         m_selectedSerialPortIndex = 0;
     }
 
-    ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+    ui->wheelSlipPortComboBox->setCurrentIndex(m_selectedSerialPortIndex);
 }
 
 //void MainWindow::refreshSerialPortList()
@@ -203,19 +230,19 @@ void MainWindow::setupSerialPortList()
 //    {
 //        m_selectedSerialPortIndex = -1;
 //        m_serialPorts.clear();
-//        ui->portsComboBox->clear();
-//        ui->portsComboBox->setEnabled(false);
+//        ui->wheelSlipPortComboBox->clear();
+//        ui->wheelSlipPortComboBox->setEnabled(false);
 //        return;
 //    }
 
-//    ui->portsComboBox->setEnabled(true);
+//    ui->wheelSlipPortComboBox->setEnabled(true);
 
 //    if (m_selectedSerialPortIndex != -1)
 //    {
 //        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
 //    }
 
-//    ui->portsComboBox->clear();
+//    ui->wheelSlipPortComboBox->clear();
 
 //    if (!m_port.isEmpty())
 //    {
@@ -223,7 +250,7 @@ void MainWindow::setupSerialPortList()
 //        if (newIndex == -1)
 //        {
 //            m_selectedSerialPortIndex = -1;
-//            ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+//            ui->wheelSlipPortComboBox->setCurrentIndex(m_selectedSerialPortIndex);
 //            m_port.clear();
 //            return;
 //        }
@@ -233,15 +260,15 @@ void MainWindow::setupSerialPortList()
 
 //    m_serialPorts = newSerialPortList;
 
-//    ui->portsComboBox->addItems(m_serialPorts);
-//    ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+//    ui->wheelSlipPortComboBox->addItems(m_serialPorts);
+//    ui->wheelSlipPortComboBox->setCurrentIndex(m_selectedSerialPortIndex);
 //    m_port = m_serialPorts.at(m_selectedSerialPortIndex);
 
 //    // If no port was selected before, select the first one by default
 //    if (m_selectedSerialPortIndex == -1)
 //    {
 //        m_selectedSerialPortIndex = 0;
-//        ui->portsComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+//        ui->wheelSlipPortComboBox->setCurrentIndex(m_selectedSerialPortIndex);
 //        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
 //    }
 //}
@@ -394,14 +421,14 @@ void MainWindow::onSendData(const QByteArray &data)
     m_serialThread.transaction(m_port.portName, data);
 }
 
-void MainWindow::on_portsComboBox_currentIndexChanged(int index)
+void MainWindow::on_wheelSlipPortComboBox_currentIndexChanged(int index)
 {
     if ((m_selectedSerialPortIndex != index) && (!m_initializing))
     {
         m_selectedSerialPortIndex = index;
         Port port = m_serialPorts.at(m_selectedSerialPortIndex);
         qDebug() << "Selected port: " << port.getDesignator();
-        Settings::getInstance()->setPort(port.portName);
+        Settings::getInstance()->setWheelSlipPort(port.portName);
     }
 }
 
@@ -419,4 +446,38 @@ void MainWindow::on_upsSpinBox_valueChanged(int ups)
     {
         ui->upsSpinBox->setValue(upsInBounds);
     }
+}
+
+void MainWindow::on_enableWheelSlipCheckBox_clicked(bool checked)
+{
+    if (!m_initializing)
+    {
+        Settings::getInstance()->setWheelSlipEnabled(checked);
+    }
+
+    showWheelSlipPage(checked);
+}
+
+void MainWindow::on_enableLedFlagCheckBox_clicked(bool checked)
+{
+    if (!m_initializing)
+    {
+        Settings::getInstance()->setLedFlagEnabled(checked);
+    }
+
+    showLedFlagPage(checked);
+}
+
+void MainWindow::showWheelSlipPage(bool show)
+{
+    ui->wheelSlipPortComboBox->setEnabled(show);
+    ui->frontLeftLineEdit->setEnabled(show);
+    ui->frontRightLineEdit->setEnabled(show);
+    ui->rearLeftLineEdit->setEnabled(show);
+    ui->rearRightLineEdit->setEnabled(show);
+}
+
+void MainWindow::showLedFlagPage(bool show)
+{
+    ui->ledFlagPortComboBox->setEnabled(show);
 }

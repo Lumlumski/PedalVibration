@@ -55,6 +55,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void onSetStatus(const AC_STATUS &status);
+    void onSetBumpingState(bool bumping);
     void onFrontLeftStatusUpdated(WheelSlipStatus status);
     void onFrontRightStatusUpdated(WheelSlipStatus status);
     void onRearLeftStatusUpdated(WheelSlipStatus status);

@@ -58,6 +58,7 @@ public:
 
 Q_SIGNALS:
     void setStatus(const AC_STATUS &status);
+    void setBumpingState(bool bumping);
     void frontLeftStatusUpdated(WheelSlipStatus status);
     void frontRightStatusUpdated(WheelSlipStatus status);
     void rearLeftStatusUpdated(WheelSlipStatus status);
@@ -87,6 +88,7 @@ private:
     const float BRAKE_INDEX = 0.98f;
     const float GAS_INDEX = 1.08f;
     float m_speed;
+    bool m_lastBumping;
 
     WheelSlipStatus m_oldFrontLeftSlipStatus = NotSlipping;
     WheelSlipStatus m_oldFrontRightSlipStatus = NotSlipping;

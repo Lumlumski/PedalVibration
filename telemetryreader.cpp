@@ -12,6 +12,7 @@ TelemetryReader::TelemetryReader(QObject *parent)
     , m_lastStatus(AC_OFF)
     , m_readStaticData(false)
     , m_speed(0.0f)
+    , m_lastBumping(false)
 {
     (void)connect(&m_readTimer, &QTimer::timeout, this, &TelemetryReader::readData);
     m_readTimer.setInterval(m_standbyInterval);
@@ -115,6 +116,11 @@ void TelemetryReader::readData()
     bumping |= (m_acData.getWheelLoad(Wheel::FrontRight) == 0.0f);
     bumping |= (m_acData.getWheelLoad(Wheel::RearLeft) == 0.0f);
     bumping |= (m_acData.getWheelLoad(Wheel::RearRight) == 0.0f);
+    if (m_lastBumping != bumping)
+    {
+        Q_EMIT setBumpingState(bumping);
+        m_lastBumping = bumping;
+    }
 
     switch (frontLeftSlipStatus)
     {

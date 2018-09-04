@@ -36,6 +36,7 @@ void MainWindow::setupTelemetyReader()
 {
     (void)connect(&m_telemetryReader, &TelemetryReader::error, this, &MainWindow::onError);
     (void)connect(&m_telemetryReader, &TelemetryReader::setStatus, this, &MainWindow::onSetStatus);
+    (void)connect(&m_telemetryReader, &TelemetryReader::setBumpingState, this, &MainWindow::onSetBumpingState);
     (void)connect(&m_telemetryReader, &TelemetryReader::frontLeftStatusUpdated, this, &MainWindow::onFrontLeftStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::frontRightStatusUpdated, this, &MainWindow::onFrontRightStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::rearLeftStatusUpdated, this, &MainWindow::onRearLeftStatusUpdated);
@@ -270,6 +271,11 @@ void MainWindow::onSetStatus(const AC_STATUS &status)
     }
 
     ui->statusLabel->setText(statusText);
+}
+
+void MainWindow::onSetBumpingState(bool bumping)
+{
+    ui->bumpingLabel->setVisible(bumping);
 }
 
 void MainWindow::clearWheelSlipIndicators()

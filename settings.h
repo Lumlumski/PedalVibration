@@ -36,6 +36,12 @@ public:
     bool getMinimizeWithX() const;
     void setMinimizeWithX(bool minimizeWithX);
 
+    qint32 getBrakeIndex() const;
+    void setBrakeIndex(const qint32 &brakeIndex);
+
+    qint32 getGasIndex() const;
+    void setGasIndex(const qint32 &gasIndex);
+
 Q_SIGNALS:
     void wheelSlipPortChanged();
     void ledFlagPortChanged();
@@ -54,6 +60,9 @@ private:
     QString m_windFanPort;
     qint32 m_ups;
     bool m_minimizeWithX;
+
+    qint32 m_brakeIndex;
+    qint32 m_gasIndex;
 };
 
 #endif // SETTINGS_H

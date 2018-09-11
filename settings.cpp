@@ -11,6 +11,9 @@ static const QString LED_FLAG_PORT = "LEDFlagPort";
 static const QString UPS = "UPS";
 static const QString MINIMIZE_WITH_X = "MinimizeWithX";
 
+static const QString BRAKE_INDEX = "BrakeIndex";
+static const QString GAS_INDEX = "GasIndex";
+
 Settings::Settings(QObject *parent)
     : QObject(parent)
     , m_wheelSlipEnabled(false)
@@ -71,6 +74,18 @@ void Settings::loadSettings()
     }
 
     m_minimizeWithX = settings.value(MINIMIZE_WITH_X, false).toBool();
+
+    qint32 brakeIndex = settings.value(BRAKE_INDEX, 2).toInt();
+    if ((brakeIndex >= 0) && (brakeIndex <= 100))
+    {
+        m_brakeIndex = brakeIndex;
+    }
+
+    qint32 gasIndex = settings.value(GAS_INDEX, 8).toInt();
+    if ((gasIndex >= 0) && (gasIndex <= 100))
+    {
+        m_gasIndex = gasIndex;
+    }
 }
 
 bool Settings::getWheelSlipEnabled() const
@@ -188,5 +203,33 @@ void Settings::setMinimizeWithX(bool minimizeWithX)
     {
         m_minimizeWithX = minimizeWithX;
         QSettings().setValue(MINIMIZE_WITH_X, m_minimizeWithX);
+    }
+}
+
+qint32 Settings::getBrakeIndex() const
+{
+    return m_brakeIndex;
+}
+
+void Settings::setBrakeIndex(const qint32 &brakeIndex)
+{
+    if (m_brakeIndex != brakeIndex)
+    {
+        m_brakeIndex = brakeIndex;
+        QSettings().setValue(BRAKE_INDEX, m_brakeIndex);
+    }
+}
+
+qint32 Settings::getGasIndex() const
+{
+    return m_gasIndex;
+}
+
+void Settings::setGasIndex(const qint32 &gasIndex)
+{
+    if (m_gasIndex != gasIndex)
+    {
+        m_gasIndex = gasIndex;
+        QSettings().setValue(GAS_INDEX, m_gasIndex);
     }
 }

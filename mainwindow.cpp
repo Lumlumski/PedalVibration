@@ -13,6 +13,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_wheelSlipConfig(new WheelSlipConfiguration(this))
     , m_initializing(true)
 {
     ui->setupUi(this);
@@ -620,4 +621,11 @@ void MainWindow::showWindFanPage(bool show)
     {
         ui->speedLineEdit->setText("--");
     }
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    this->setEnabled(false);
+    m_wheelSlipConfig->setEnabled(true);
+    m_wheelSlipConfig->show();
 }

@@ -79,7 +79,9 @@ private:
     WheelSlipStatus getSlipStatus(float slipValue, float calculatedSpeed);
     bool dataChanged();
     void sendInitialValues();
-    void send();
+    void sendWheelSlip();
+    void sendLedFlag();
+    void sendWindFan();
 
     QTimer m_readTimer;
     qint32 m_standbyInterval;
@@ -94,6 +96,7 @@ private:
     qint32 m_speed;
     qint32 m_lastSpeed;
     bool m_lastBumping;
+    //qint32 m_flagStatus;
 
     WheelSlipStatus m_oldFrontLeftSlipStatus = NotSlipping;
     WheelSlipStatus m_oldFrontRightSlipStatus = NotSlipping;

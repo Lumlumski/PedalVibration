@@ -24,7 +24,9 @@ private:
     QByteArray m_request;
     QMutex m_mutex;
     QWaitCondition m_cond;
+    qint32 m_waitTimeout = 100;
     bool m_quit = false;
+    const bool READ_RESPONSE = false;
 };
 
 #endif // SERIALTHREAD_H

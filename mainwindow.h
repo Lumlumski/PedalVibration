@@ -60,17 +60,24 @@ public Q_SLOTS:
     void onFrontRightStatusUpdated(WheelSlipStatus status);
     void onRearLeftStatusUpdated(WheelSlipStatus status);
     void onRearRightStatusUpdated(WheelSlipStatus status);
-    void onSendData(const QByteArray &data);
+    void onSpeedUpdated(qint32 speed);
+    void onSendWheelSlipData(const QByteArray &data);
+    void onSendLedFlagData(const QByteArray &data);
+    void onSendWindFanData(const QByteArray &data);
 
 private Q_SLOTS:
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
     void showWindow();
 
     void onError(const QString &error);
-    void on_portsComboBox_currentIndexChanged(int index);
+    void on_wheelSlipPortComboBox_currentIndexChanged(int index);
+    void on_ledFlagPortComboBox_currentIndexChanged(int index);
+    void on_windFanPortComboBox_currentIndexChanged(int index);
     void on_minimizeWindowCheckBox_clicked(bool checked);
-
     void on_upsSpinBox_valueChanged(int ups);
+    void on_enableWheelSlipCheckBox_clicked(bool checked);
+    void on_enableLedFlagCheckBox_clicked(bool checked);
+    void on_enableWindFanCheckBox_clicked(bool checked);
 
 private:
     void setupTelemetyReader();
@@ -83,14 +90,21 @@ private:
 
     QList<Port> getAvailableSerialPorts();
     void refreshSerialPortList();
-    void clearWheelSlipIndicators();
+    void clearIndicators();
+
+    void showWheelSlipPage(bool show);
+    void showLedFlagPage(bool show);
+    void showWindFanPage(bool show);
+    void sendStopFan();
 
     void createActions();
     void createTrayIcon();
     void showAppStartedMessage();
 
     Ui::MainWindow *ui;
-    SerialThread m_serialThread;
+    SerialThread m_wheelSlipSerialThread;
+    SerialThread m_ledFlagSerialThread;
+    SerialThread m_windFanSerialThread;
     TelemetryReader m_telemetryReader;
 
     QSystemTrayIcon *m_trayIcon;
@@ -102,7 +116,9 @@ private:
 
     bool m_initializing;
     qint32 m_selectedSerialPortIndex = -1;
-    Port m_port;
+    Port m_wheelSlipPort;
+    Port m_ledFlagPort;
+    Port m_windFanPort;
     QList<Port> m_serialPorts;
 
 };

@@ -4,6 +4,9 @@
 #include <QString>
 #include <QChar>
 #include <QProcess>
+#include <QBuffer>
+#include <QDataStream>
+#include <QtEndian>
 
 TelemetryReader::TelemetryReader(QObject *parent)
     : QObject(parent)
@@ -11,7 +14,8 @@ TelemetryReader::TelemetryReader(QObject *parent)
     , m_liveInterval(0)
     , m_lastStatus(AC_OFF)
     , m_readStaticData(false)
-    , m_speed(0.0f)
+    , m_speed(0)
+    , m_lastSpeed(0)
     , m_lastBumping(false)
 {
     (void)connect(&m_readTimer, &QTimer::timeout, this, &TelemetryReader::readData);
@@ -60,6 +64,7 @@ void TelemetryReader::readData()
         {
             m_readTimer.setInterval(m_standbyInterval);
             m_lastStatus = status;
+            sendInitialValues();
             return;
         }
         else if (status == AC_LIVE)
@@ -87,6 +92,8 @@ void TelemetryReader::readData()
     //  Check if tyre radius is not set yet
     if (!m_readStaticData)
     {
+        // Reset serial data to 0
+        sendInitialValues();
         m_tyreRadius.frontLeft = m_acData.getTyreRadius((Wheel::FrontLeft));
         m_tyreRadius.frontRight = m_acData.getTyreRadius(Wheel::FrontRight);
         m_tyreRadius.rearLeft = m_acData.getTyreRadius(Wheel::RearLeft);
@@ -94,20 +101,38 @@ void TelemetryReader::readData()
         m_readStaticData = true;
     }
 
-    m_speed = m_acData.getSpeedKmh();
+    m_lastSpeed = m_speed;
+    m_speed = qRound(m_acData.getSpeedKmh());
+
+    if (m_speed != m_lastSpeed)
+    {
+        Q_EMIT speedUpdated(m_speed);
+        qint32 bytesWritten = 0;
+        QByteArray speedData;
+
+        // Identification for "wind fan"
+        speedData.append(0x02);
+        ++bytesWritten;
+
+        qint32 speed = qBound(0, ((m_speed / 3) * 2), 127);
+        speedData.append(QChar(speed));
+        ++bytesWritten;
+
+        // Fill the buffer with 0x00
+        for (qint32 i = bytesWritten; i < 8; ++i)
+        {
+            speedData.append(QChar(0));
+        }
+
+        Q_EMIT sendWindFanData(speedData);
+    }
+
     WheelValueInt slip = getWheelSlip();
     WheelValueFloat calculatedSpeed = getCalculatedSpeed();
 
-    qDebug() << "Front left wheel:";
     WheelSlipStatus frontLeftSlipStatus = getSlipStatus(slip.frontLeft, calculatedSpeed.frontLeft);
-
-    qDebug() << "Front right wheel:";
     WheelSlipStatus frontRightSlipStatus = getSlipStatus(slip.frontRight, calculatedSpeed.frontRight);
-
-    qDebug() << "Rear left wheel:";
     WheelSlipStatus rearLeftSlipStatus = getSlipStatus(slip.rearLeft, calculatedSpeed.rearLeft);
-
-    qDebug() << "Rear right wheel:";
     WheelSlipStatus rearRightSlipStatus = getSlipStatus(slip.rearRight, calculatedSpeed.rearRight);
 
     // Check for bumping effect
@@ -122,21 +147,30 @@ void TelemetryReader::readData()
         m_lastBumping = bumping;
     }
 
+    m_maxBrakeValue = 0;
+    m_maxGasValue = 0;
+
     switch (frontLeftSlipStatus)
     {
     case SlippingFromBraking:
-        m_serialData[0] = slip.frontLeft;
-        m_serialData[1] = 0;
-        break;
+    {
+        if (slip.frontLeft > m_maxBrakeValue)
+        {
+            m_maxBrakeValue = slip.frontLeft;
+        }
 
+        break;
+    }
     case SlippingFromGas:
-        m_serialData[0] = 0;
-        m_serialData[1] = slip.frontLeft;
-        break;
+    {
+        if (slip.frontLeft > m_maxGasValue)
+        {
+            m_maxGasValue = slip.frontLeft;
+        }
 
+        break;
+    }
     case NotSlipping:
-        m_serialData[0] = 0;
-        m_serialData[1] = 0;
         break;
     }
 
@@ -149,18 +183,24 @@ void TelemetryReader::readData()
     switch (frontRightSlipStatus)
     {
     case SlippingFromBraking:
-        m_serialData[2] = slip.frontRight;
-        m_serialData[3] = 0;
-        break;
+    {
+        if (slip.frontRight > m_maxBrakeValue)
+        {
+            m_maxBrakeValue = slip.frontRight;
+        }
 
+        break;
+    }
     case SlippingFromGas:
-        m_serialData[2] = 0;
-        m_serialData[3] = slip.frontRight;
-        break;
+    {
+        if (slip.frontRight > m_maxGasValue)
+        {
+            m_maxGasValue = slip.frontRight;
+        }
 
+        break;
+    }
     case NotSlipping:
-        m_serialData[2] = 0;
-        m_serialData[3] = 0;
         break;
     }
 
@@ -173,18 +213,24 @@ void TelemetryReader::readData()
     switch (rearLeftSlipStatus)
     {
     case SlippingFromBraking:
-        m_serialData[4] = slip.rearLeft;
-        m_serialData[5] = 0;
-        break;
+    {
+        if (slip.rearLeft > m_maxBrakeValue)
+        {
+            m_maxBrakeValue = slip.rearLeft;
+        }
 
+        break;
+    }
     case SlippingFromGas:
-        m_serialData[4] = 0;
-        m_serialData[5] = slip.rearLeft;
-        break;
+    {
+        if (slip.rearLeft > m_maxGasValue)
+        {
+            m_maxGasValue = slip.rearLeft;
+        }
 
+        break;
+    }
     case NotSlipping:
-        m_serialData[4] = 0;
-        m_serialData[5] = 0;
         break;
     }
 
@@ -197,18 +243,24 @@ void TelemetryReader::readData()
     switch (rearRightSlipStatus)
     {
     case SlippingFromBraking:
-        m_serialData[6] = slip.rearRight;
-        m_serialData[7] = 0;
-        break;
+    {
+        if (slip.rearRight > m_maxBrakeValue)
+        {
+            m_maxBrakeValue = slip.rearRight;
+        }
 
+        break;
+    }
     case SlippingFromGas:
-        m_serialData[6] = 0;
-        m_serialData[7] = slip.rearRight;
-        break;
+    {
+        if (slip.rearRight > m_maxGasValue)
+        {
+            m_maxGasValue = slip.rearRight;
+        }
 
+        break;
+    }
     case NotSlipping:
-        m_serialData[6] = 0;
-        m_serialData[7] = 0;
         break;
     }
 
@@ -221,36 +273,24 @@ void TelemetryReader::readData()
     // Let everything vibrate a bit if bumping was detected
     if (bumping)
     {
-        for (qint32 i = 0; i < 8; ++i)
-        {
-            if (m_serialData[i] < 3) m_serialData[i] = 3;
-        }
+        if (m_maxBrakeValue < 3) m_maxBrakeValue = 3;
+        if (m_maxGasValue < 3) m_maxGasValue = 3;
     }
 
     // Only send if something has changed
     if (dataChanged())
     {
-        sendData();
+        send();
     }
 
     // Save current values for comparison with future values
-    for (qint32 i = 0; i < 8; ++i)
-    {
-        m_lastSerialData[i] = m_serialData[i];
-    }
+    m_lastMaxBrakeValue = m_maxBrakeValue;
+    m_lastMaxGasValue = m_maxGasValue;
 }
 
 bool TelemetryReader::dataChanged()
 {
-    for (qint32 i = 0; i < 8; ++i)
-    {
-        if (m_serialData[i] != m_lastSerialData[i])
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return ((m_lastMaxBrakeValue != m_maxBrakeValue) || (m_lastMaxGasValue != m_maxGasValue));
 }
 
 WheelValueInt TelemetryReader::getWheelSlip()
@@ -289,32 +329,61 @@ WheelSlipStatus TelemetryReader::getSlipStatus(float slipValue, float calculated
 {
     if (slipValue == 0.0f)
     {
-        qDebug() << "Not slipping";
         return NotSlipping;
     }
     else if (calculatedSpeed < (m_speed * BRAKE_INDEX))
     {
-        qDebug() << "Slipping from braking";
         return SlippingFromBraking;
     }
     else if (calculatedSpeed > (m_speed * GAS_INDEX))
     {
-        qDebug() << "Slipping from gas";
         return SlippingFromGas;
     }
 
-    qDebug() << "Not slipping";
     return NotSlipping;
 }
 
-void TelemetryReader::sendData()
+void TelemetryReader::sendInitialValues()
 {
     QByteArray data;
     for (qint32 i = 0; i < 8; ++i)
     {
-        data.append(QChar(m_serialData[i]));
+        data.append(QChar(0));
     }
 
-    qDebug() << "Sending buffer: " << data;
-    Q_EMIT sendData(data);
+    Q_EMIT sendWheelSlipData(data);
+
+    QByteArray speedData;
+    speedData.append(0x02);
+
+    // Fill the buffer with 0x00
+    for (qint32 i = 1; i < 8; ++i)
+    {
+        speedData.append(QChar(0));
+    }
+
+    Q_EMIT speedUpdated(0);
+    Q_EMIT sendWindFanData(speedData);
+}
+
+void TelemetryReader::send()
+{
+    qint32 brakeValue = qBound(0, m_maxBrakeValue, 127);
+    qint32 gasValue = qBound(0, m_maxGasValue, 127);
+
+    qDebug() << "brakeValue:" << brakeValue;
+    qDebug() << "gasValue:" << gasValue;
+
+    QByteArray data;
+    data.append(QChar(0));
+    data.append(QChar(brakeValue));
+    data.append(QChar(gasValue));
+
+    // Fill the buffer with 0x00
+    for (qint32 i = 3; i < 8; ++i)
+    {
+        data.append(QChar(0));
+    }
+
+    Q_EMIT sendWheelSlipData(data);
 }

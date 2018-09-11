@@ -35,6 +35,7 @@ void SerialThread::transaction(const QString &portName, const QByteArray &reques
 
 void SerialThread::run()
 {
+    qDebug() << "SerialThread::run()";
     bool currentPortNameChanged = false;
 
     m_mutex.lock();
@@ -45,7 +46,7 @@ void SerialThread::run()
         currentPortNameChanged = true;
     }
 
-    //int currentWaitTimeout = m_waitTimeout;
+    qint32 currentWaitTimeout = m_waitTimeout;
     QByteArray currentRequest = m_request;
     m_mutex.unlock();
     QSerialPort serial;
@@ -62,6 +63,7 @@ void SerialThread::run()
         {
             serial.close();
             serial.setPortName(currentPortName);
+            serial.setBaudRate(9600);
 
             if (!serial.open(QIODevice::ReadWrite))
             {
@@ -71,31 +73,39 @@ void SerialThread::run()
         }
         // write request
         const QByteArray requestData = currentRequest;
-        serial.write(requestData);
 
-//        if (serial.waitForBytesWritten(m_waitTimeout))
-//        {
-//            // read response
-//            if (serial.waitForReadyRead(currentWaitTimeout))
-//            {
-//                QByteArray responseData = serial.readAll();
-//                while (serial.waitForReadyRead(10))
-//                {
-//                    responseData += serial.readAll();
-//                }
+        qDebug() << "Request:";
+        for (qint32 i = 0; i < requestData.size(); ++i)
+        {
+            QChar current = requestData.at(i);
+            qDebug() << i << ") " << QString::number(current.toLatin1());
+        }
 
-//                const QString response = QString::fromUtf8(responseData);
-//                Q_EMIT this->response(response);
-//            }
-//            else
-//            {
-//                Q_EMIT timeout("Wait read response timeout " + QTime::currentTime().toString());
-//            }
-//        }
-//        else
-//        {
-//            Q_EMIT timeout("Wait write request timeout " + QTime::currentTime().toString());
-//        }
+        qint64 bytesSent = serial.write(requestData);
+        if (serial.waitForBytesWritten(m_waitTimeout))
+        {
+            qDebug() << "Sent" << bytesSent << "Bytes";
+
+            if (READ_RESPONSE)
+            {
+                // Read response
+                if (serial.waitForReadyRead(currentWaitTimeout))
+                {
+                    QByteArray responseData = serial.readAll();
+                    while (serial.waitForReadyRead(10))
+                    {
+                        responseData += serial.readAll();
+                    }
+
+                    qDebug() << "Response:";
+                    for (qint32 i = 0; i < responseData.size(); ++i)
+                    {
+                        QChar current = responseData.at(i);
+                        qDebug() << i << ") " << QString::number(current.toLatin1());
+                    }
+                }
+            }
+        }
 
         m_mutex.lock();
         m_cond.wait(&m_mutex);

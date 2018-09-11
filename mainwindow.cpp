@@ -37,12 +37,20 @@ MainWindow::~MainWindow()
 void MainWindow::setupTelemetyReader()
 {
     (void)connect(&m_telemetryReader, &TelemetryReader::error, this, &MainWindow::onError);
+
+    // UI
     (void)connect(&m_telemetryReader, &TelemetryReader::setStatus, this, &MainWindow::onSetStatus);
     (void)connect(&m_telemetryReader, &TelemetryReader::setBumpingState, this, &MainWindow::onSetBumpingState);
     (void)connect(&m_telemetryReader, &TelemetryReader::frontLeftStatusUpdated, this, &MainWindow::onFrontLeftStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::frontRightStatusUpdated, this, &MainWindow::onFrontRightStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::rearLeftStatusUpdated, this, &MainWindow::onRearLeftStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::rearRightStatusUpdated, this, &MainWindow::onRearRightStatusUpdated);
+    (void)connect(&m_telemetryReader, &TelemetryReader::speedUpdated, this, &MainWindow::onSpeedUpdated);
+
+    // Serial
+    (void)connect(&m_telemetryReader, &TelemetryReader::sendWheelSlipData, this, &MainWindow::onSendWheelSlipData);
+    (void)connect(&m_telemetryReader, &TelemetryReader::sendLedFlagData, this, &MainWindow::onSendLedFlagData);
+    (void)connect(&m_telemetryReader, &TelemetryReader::sendWindFanData, this, &MainWindow::onSendWindFanData);
 }
 
 void MainWindow::setupTrayIcon()
@@ -82,6 +90,18 @@ void MainWindow::readSettings()
     {
         ui->enableLedFlagCheckBox->setCheckState(Qt::CheckState::Unchecked);
         showLedFlagPage(false);
+    }
+
+    // Wind Fan enabled
+    if (settings->getWindFanEnabled())
+    {
+        ui->enableWindFanCheckBox->setCheckState(Qt::CheckState::Checked);
+        showWindFanPage(true);
+    }
+    else
+    {
+        ui->enableWindFanCheckBox->setCheckState(Qt::CheckState::Unchecked);
+        showWindFanPage(false);
     }
 
     // UPS
@@ -185,93 +205,73 @@ QList<Port> MainWindow::getAvailableSerialPorts()
 
 void MainWindow::setupSerialPortList()
 {
+    qint32 wheelSlipPortSelectedIndex = -1;
+    qint32 ledFlagPortSelectedIndex = -1;
+    qint32 windFanPortSelectedIndex = -1;
+
     QList<Port> serialPortList = getAvailableSerialPorts();
     if (serialPortList.isEmpty())
     {
-        m_selectedSerialPortIndex = -1;
         m_serialPorts.clear();
         ui->wheelSlipPortComboBox->clear();
         ui->wheelSlipPortComboBox->setEnabled(false);
         ui->ledFlagPortComboBox->clear();
         ui->ledFlagPortComboBox->setEnabled(false);
+        ui->windFanPortComboBox->clear();
+        ui->windFanPortComboBox->setEnabled(false);
         return;
     }
 
     m_serialPorts = serialPortList;
-    QString port = Settings::getInstance()->getWheelSlipPort();
+
+    QString wheelSlipPort = Settings::getInstance()->getWheelSlipPort();
+    QString ledFlagPort = Settings::getInstance()->getLedFlagPort();
+    QString windFanPort = Settings::getInstance()->getWindFanPort();
+
     for (qint32 i = 0; i < m_serialPorts.size(); ++i)
     {
         QString portEntry = m_serialPorts[i].getDesignator();
         ui->wheelSlipPortComboBox->addItem(portEntry);
         ui->ledFlagPortComboBox->addItem(portEntry);
-        if (m_serialPorts[i].portName == port)
+        ui->windFanPortComboBox->addItem(portEntry);
+
+        if (m_serialPorts[i].portName == wheelSlipPort)
         {
-            m_selectedSerialPortIndex = i;
+            wheelSlipPortSelectedIndex = i;
+            m_wheelSlipPort = m_serialPorts[i];
+            ui->wheelSlipPortComboBox->setCurrentIndex(i);
+        }
+
+        if (m_serialPorts[i].portName == ledFlagPort)
+        {
+            ledFlagPortSelectedIndex = i;
+            m_ledFlagPort = m_serialPorts[i];
+            ui->ledFlagPortComboBox->setCurrentIndex(i);
+        }
+
+        if (m_serialPorts[i].portName == windFanPort)
+        {
+            windFanPortSelectedIndex = i;
+            m_windFanPort = m_serialPorts[i];
+            ui->windFanPortComboBox->setCurrentIndex(i);
         }
     }
 
-    if (m_selectedSerialPortIndex == -1)
+    if (wheelSlipPortSelectedIndex == -1)
     {
-        m_selectedSerialPortIndex = 0;
+        ui->wheelSlipPortComboBox->setCurrentIndex(0);
     }
 
-    ui->wheelSlipPortComboBox->setCurrentIndex(m_selectedSerialPortIndex);
+    if (ledFlagPortSelectedIndex == -1)
+    {
+        ui->ledFlagPortComboBox->setCurrentIndex(0);
+    }
+
+    if (windFanPortSelectedIndex == -1)
+    {
+        ui->windFanPortComboBox->setCurrentIndex(0);
+    }
 }
-
-//void MainWindow::refreshSerialPortList()
-//{
-//    qDebug() << "Refreshing serial port list";
-//    QList<Port> newSerialPortList = getAvailableSerialPorts();
-//    qDebug() << newSerialPortList;
-
-//    m_port.clear();
-
-//    if (newSerialPortList.isEmpty())
-//    {
-//        m_selectedSerialPortIndex = -1;
-//        m_serialPorts.clear();
-//        ui->wheelSlipPortComboBox->clear();
-//        ui->wheelSlipPortComboBox->setEnabled(false);
-//        return;
-//    }
-
-//    ui->wheelSlipPortComboBox->setEnabled(true);
-
-//    if (m_selectedSerialPortIndex != -1)
-//    {
-//        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
-//    }
-
-//    ui->wheelSlipPortComboBox->clear();
-
-//    if (!m_port.isEmpty())
-//    {
-//        qint32 newIndex = newSerialPortList.indexOf(m_port);
-//        if (newIndex == -1)
-//        {
-//            m_selectedSerialPortIndex = -1;
-//            ui->wheelSlipPortComboBox->setCurrentIndex(m_selectedSerialPortIndex);
-//            m_port.clear();
-//            return;
-//        }
-
-//        m_selectedSerialPortIndex = newIndex;
-//    }
-
-//    m_serialPorts = newSerialPortList;
-
-//    ui->wheelSlipPortComboBox->addItems(m_serialPorts);
-//    ui->wheelSlipPortComboBox->setCurrentIndex(m_selectedSerialPortIndex);
-//    m_port = m_serialPorts.at(m_selectedSerialPortIndex);
-
-//    // If no port was selected before, select the first one by default
-//    if (m_selectedSerialPortIndex == -1)
-//    {
-//        m_selectedSerialPortIndex = 0;
-//        ui->wheelSlipPortComboBox->setCurrentIndex(m_selectedSerialPortIndex);
-//        m_port = m_serialPorts.at(m_selectedSerialPortIndex);
-//    }
-//}
 
 void MainWindow::onSetStatus(const AC_STATUS &status)
 {
@@ -281,12 +281,12 @@ void MainWindow::onSetStatus(const AC_STATUS &status)
     case AC_OFF:
         qDebug() << "Status changed: OFF";
         statusText = "acs.exe is not running";
-        clearWheelSlipIndicators();
+        clearIndicators();
         break;
     case AC_REPLAY:
         qDebug() << "Status changed: REPLAY";
         statusText = "Replay running";
-        clearWheelSlipIndicators();
+        clearIndicators();
         break;
     case AC_LIVE:
         qDebug() << "Status changed: LIVE";
@@ -295,7 +295,7 @@ void MainWindow::onSetStatus(const AC_STATUS &status)
     case AC_PAUSE:
         qDebug() << "Status changed: PAUSE";
         statusText = "Game is paused";
-        clearWheelSlipIndicators();
+        clearIndicators();
         break;
     }
 
@@ -307,16 +307,23 @@ void MainWindow::onSetBumpingState(bool bumping)
     ui->bumpingLabel->setVisible(bumping);
 }
 
-void MainWindow::clearWheelSlipIndicators()
+void MainWindow::clearIndicators()
 {
     ui->frontLeftLineEdit->setText("--");
     ui->frontRightLineEdit->setText("--");
     ui->rearLeftLineEdit->setText("--");
     ui->rearRightLineEdit->setText("--");
+
+    ui->speedLineEdit->setText("--");
 }
 
 void MainWindow::onFrontLeftStatusUpdated(WheelSlipStatus status)
 {
+    if (!Settings::getInstance()->getWheelSlipEnabled())
+    {
+        return;
+    }
+
     QString newStatus;
     switch (status)
     {
@@ -341,6 +348,11 @@ void MainWindow::onFrontLeftStatusUpdated(WheelSlipStatus status)
 
 void MainWindow::onFrontRightStatusUpdated(WheelSlipStatus status)
 {
+    if (!Settings::getInstance()->getWheelSlipEnabled())
+    {
+        return;
+    }
+
     QString newStatus;
     switch (status)
     {
@@ -365,6 +377,11 @@ void MainWindow::onFrontRightStatusUpdated(WheelSlipStatus status)
 
 void MainWindow::onRearLeftStatusUpdated(WheelSlipStatus status)
 {
+    if (!Settings::getInstance()->getWheelSlipEnabled())
+    {
+        return;
+    }
+
     QString newStatus;
     switch (status)
     {
@@ -389,6 +406,11 @@ void MainWindow::onRearLeftStatusUpdated(WheelSlipStatus status)
 
 void MainWindow::onRearRightStatusUpdated(WheelSlipStatus status)
 {
+    if (!Settings::getInstance()->getWheelSlipEnabled())
+    {
+        return;
+    }
+
     QString newStatus;
     switch (status)
     {
@@ -411,24 +433,88 @@ void MainWindow::onRearRightStatusUpdated(WheelSlipStatus status)
     }
 }
 
-void MainWindow::onSendData(const QByteArray &data)
+void MainWindow::onSpeedUpdated(qint32 speed)
 {
-    if (m_port.isEmpty())
+    ui->speedLineEdit->setText(QString::number(speed));
+}
+
+void MainWindow::onSendWheelSlipData(const QByteArray &data)
+{
+    if (!Settings::getInstance()->getWheelSlipEnabled())
+    {
+        qDebug() << "sendWheelSlipData not enabled";
+        return;
+    }
+
+    QString port = Settings::getInstance()->getWheelSlipPort();
+    if (port.isEmpty())
+    {
+        qDebug() << "Port not found";
+        return;
+    }
+
+    m_wheelSlipSerialThread.transaction(port, data);
+}
+
+void MainWindow::onSendLedFlagData(const QByteArray &data)
+{
+    if (!Settings::getInstance()->getLedFlagEnabled())
     {
         return;
     }
 
-    m_serialThread.transaction(m_port.portName, data);
+    QString port = Settings::getInstance()->getLedFlagPort();
+    if (port.isEmpty())
+    {
+        return;
+    }
+
+    m_ledFlagSerialThread.transaction(port, data);
+}
+
+void MainWindow::onSendWindFanData(const QByteArray &data)
+{
+    if (!Settings::getInstance()->getWindFanEnabled())
+    {
+        return;
+    }
+
+    QString port = Settings::getInstance()->getWindFanPort();
+    if (port.isEmpty())
+    {
+        return;
+    }
+
+    m_windFanSerialThread.transaction(port, data);
 }
 
 void MainWindow::on_wheelSlipPortComboBox_currentIndexChanged(int index)
 {
-    if ((m_selectedSerialPortIndex != index) && (!m_initializing))
+    if (!m_initializing)
     {
-        m_selectedSerialPortIndex = index;
-        Port port = m_serialPorts.at(m_selectedSerialPortIndex);
-        qDebug() << "Selected port: " << port.getDesignator();
-        Settings::getInstance()->setWheelSlipPort(port.portName);
+        m_wheelSlipPort = m_serialPorts.at(index);
+        qDebug() << "Selected port: " << m_wheelSlipPort.getDesignator();
+        Settings::getInstance()->setWheelSlipPort(m_wheelSlipPort.portName);
+    }
+}
+
+void MainWindow::on_ledFlagPortComboBox_currentIndexChanged(int index)
+{
+    if (!m_initializing)
+    {
+        m_ledFlagPort = m_serialPorts.at(index);
+        qDebug() << "Selected port: " << m_ledFlagPort.getDesignator();
+        Settings::getInstance()->setLedFlagPort(m_ledFlagPort.portName);
+    }
+}
+
+void MainWindow::on_windFanPortComboBox_currentIndexChanged(int index)
+{
+    if (!m_initializing)
+    {
+        m_windFanPort = m_serialPorts.at(index);
+        qDebug() << "Selected port: " << m_windFanPort.getDesignator();
+        Settings::getInstance()->setWindFanPort(m_windFanPort.portName);
     }
 }
 
@@ -468,6 +554,42 @@ void MainWindow::on_enableLedFlagCheckBox_clicked(bool checked)
     showLedFlagPage(checked);
 }
 
+void MainWindow::on_enableWindFanCheckBox_clicked(bool checked)
+{
+    if (!m_initializing)
+    {
+        Settings::getInstance()->setWindFanEnabled(checked);
+    }
+
+    showWindFanPage(checked);
+    if (!checked)
+    {
+        sendStopFan();
+    }
+}
+
+void MainWindow::sendStopFan()
+{
+    qint32 bytesWritten = 0;
+    QByteArray data;
+
+    data.append(0x02);
+    ++bytesWritten;
+
+    for (qint32 i = bytesWritten; i < 8; ++i)
+    {
+        data.append(QChar(0));
+    }
+
+    QString port = Settings::getInstance()->getWindFanPort();
+    if (port.isEmpty())
+    {
+        return;
+    }
+
+    m_windFanSerialThread.transaction(port, data);
+}
+
 void MainWindow::showWheelSlipPage(bool show)
 {
     ui->wheelSlipPortComboBox->setEnabled(show);
@@ -475,9 +597,27 @@ void MainWindow::showWheelSlipPage(bool show)
     ui->frontRightLineEdit->setEnabled(show);
     ui->rearLeftLineEdit->setEnabled(show);
     ui->rearRightLineEdit->setEnabled(show);
+
+    if (!show)
+    {
+        ui->frontLeftLineEdit ->setText("--");
+        ui->frontRightLineEdit->setText("--");
+        ui->rearLeftLineEdit  ->setText("--");
+        ui->rearRightLineEdit ->setText("--");
+    }
 }
 
 void MainWindow::showLedFlagPage(bool show)
 {
     ui->ledFlagPortComboBox->setEnabled(show);
+}
+
+void MainWindow::showWindFanPage(bool show)
+{
+    ui->windFanPortComboBox->setEnabled(show);
+    ui->speedLineEdit->setEnabled(show);
+    if (!show)
+    {
+        ui->speedLineEdit->setText("--");
+    }
 }

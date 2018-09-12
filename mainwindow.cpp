@@ -164,7 +164,7 @@ void MainWindow::createTrayIcon()
 
 void MainWindow::showAppStartedMessage()
 {
-    m_trayIcon->showMessage("Pedal vibration", "Pedal vibration started in tray", m_trayIcon->icon(), 100);
+    m_trayIcon->showMessage("Pedal vibration", "Pedal vibration started in tray", QSystemTrayIcon::Information, 100);
 }
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)

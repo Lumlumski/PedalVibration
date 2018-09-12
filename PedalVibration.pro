@@ -27,7 +27,7 @@ SOURCES += \
         mainwindow.cpp \
     serialthread.cpp \
     telemetryreader.cpp \
-    AssettoCorsaData.cpp \
+    assettocorsadata.cpp \
     settings.cpp \
     wheelslipconfiguration.cpp
 
@@ -35,11 +35,16 @@ HEADERS += \
         mainwindow.h \
     serialthread.h \
     telemetryreader.h \
-    AssettoCorsaData.h \
-    SharedFileOut.h \
+    assettocorsadata.h \
+    sharedfileout.h \
     settings.h \
     wheelslipconfiguration.h
 
 FORMS += \
         mainwindow.ui \
     wheelslipconfiguration.ui
+
+DISTFILES +=
+
+RESOURCES += \
+    resources.qrc

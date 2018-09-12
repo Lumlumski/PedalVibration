@@ -6,7 +6,7 @@
  * Created on 9. April 2018, 10:46
  */
 
-#include "AssettoCorsaData.h"
+#include "assettocorsadata.h"
 
 AssettoCorsaData::AssettoCorsaData()
 {

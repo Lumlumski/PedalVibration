@@ -1,5 +1,5 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#ifndef SETTINGS_698F9153BC7A4C5289DDC784D0BBB172
+#define SETTINGS_698F9153BC7A4C5289DDC784D0BBB172
 
 #include <QObject>
 #include <QSettings>
@@ -65,4 +65,4 @@ private:
     qint32 m_gasIndex;
 };
 
-#endif // SETTINGS_H
+#endif // SETTINGS_698F9153BC7A4C5289DDC784D0BBB172

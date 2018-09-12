@@ -1,9 +1,9 @@
-#ifndef TELEMETRYREADER_H
-#define TELEMETRYREADER_H
+#ifndef TELEMETRYREADER_122A5A0D4A0B4698AA1164390F74EBFE
+#define TELEMETRYREADER_122A5A0D4A0B4698AA1164390F74EBFE
 
 #include <QObject>
 #include <QTimer>
-#include "AssettoCorsaData.h"
+#include "assettocorsadata.h"
 
 struct WheelValueInt
 {
@@ -110,4 +110,4 @@ private:
 
 };
 
-#endif // TELEMETRYREADER_H
+#endif // TELEMETRYREADER_122A5A0D4A0B4698AA1164390F74EBFE

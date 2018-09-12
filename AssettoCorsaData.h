@@ -1,7 +1,7 @@
-#ifndef ASSETTOCORSADATA_H
-#define ASSETTOCORSADATA_H
+#ifndef ASSETTOCORSADATA_BAFC17206BF9423AA9B6615821D526C3
+#define ASSETTOCORSADATA_BAFC17206BF9423AA9B6615821D526C3
 
-#include "SharedFileOut.h"
+#include "sharedfileout.h"
 #include <windows.h>
 
 struct SMElement
@@ -60,5 +60,5 @@ private:
     SMElement m_static;
 };
 
-#endif /* ASSETTOCORSADATA_H */
+#endif // ASSETTOCORSADATA_BAFC17206BF9423AA9B6615821D526C3
 

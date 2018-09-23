@@ -26,6 +26,8 @@ private Q_SLOTS:
 
     void on_WheelSlipConfiguration_destroyed();
 
+    void on_bumpingIndexSlider_valueChanged(int value);
+
 private:
     void readDataFromSettings();
 
@@ -34,6 +36,7 @@ private:
 
     qint32 m_brakeIndex;
     qint32 m_gasIndex;
+    qint32 m_bumpingIndex;
 };
 
 #endif // WHEELSLIPCONFIGURATION_56FAD1DB3B45449EB6DD9B22CE7DF09D

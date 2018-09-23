@@ -13,6 +13,7 @@ static const QString MINIMIZE_WITH_X = "MinimizeWithX";
 
 static const QString BRAKE_INDEX = "BrakeIndex";
 static const QString GAS_INDEX = "GasIndex";
+static const QString BUMPING_INDEX = "BumpingIndex";
 
 Settings::Settings(QObject *parent)
     : QObject(parent)
@@ -21,6 +22,9 @@ Settings::Settings(QObject *parent)
     , m_windFanEnabled(false)
     , m_ups(10)
     , m_minimizeWithX(false)
+    , m_brakeIndex(0)
+    , m_gasIndex(0)
+    , m_bumpingIndex(0)
 {
     loadSettings();
 }
@@ -85,6 +89,12 @@ void Settings::loadSettings()
     if ((gasIndex >= 0) && (gasIndex <= 100))
     {
         m_gasIndex = gasIndex;
+    }
+
+    qint32 bumpingIndex = settings.value(BUMPING_INDEX, 3).toInt();
+    if ((bumpingIndex >= 0) && (bumpingIndex <= 100))
+    {
+        m_bumpingIndex = bumpingIndex;
     }
 }
 
@@ -231,5 +241,19 @@ void Settings::setGasIndex(const qint32 &gasIndex)
     {
         m_gasIndex = gasIndex;
         QSettings().setValue(GAS_INDEX, m_gasIndex);
+    }
+}
+
+qint32 Settings::getBumpingIndex() const
+{
+    return m_bumpingIndex;
+}
+
+void Settings::setBumpingIndex(const qint32 &bumpingIndex)
+{
+    if (m_bumpingIndex != bumpingIndex)
+    {
+        m_bumpingIndex = bumpingIndex;
+        QSettings().setValue(BUMPING_INDEX, m_bumpingIndex);
     }
 }

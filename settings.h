@@ -42,6 +42,9 @@ public:
     qint32 getGasIndex() const;
     void setGasIndex(const qint32 &gasIndex);
 
+    qint32 getBumpingIndex() const;
+    void setBumpingIndex(const qint32 &bumpingIndex);
+
 Q_SIGNALS:
     void wheelSlipPortChanged();
     void ledFlagPortChanged();
@@ -63,6 +66,7 @@ private:
 
     qint32 m_brakeIndex;
     qint32 m_gasIndex;
+    qint32 m_bumpingIndex;
 };
 
 #endif // SETTINGS_698F9153BC7A4C5289DDC784D0BBB172

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>220</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -28,7 +28,7 @@
    <property name="geometry">
     <rect>
      <x>27</x>
-     <y>247</y>
+     <y>170</y>
      <width>351</width>
      <height>32</height>
     </rect>
@@ -46,7 +46,7 @@
      <x>0</x>
      <y>10</y>
      <width>401</width>
-     <height>221</height>
+     <height>151</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -57,7 +57,7 @@
      <number>15</number>
     </property>
     <property name="leftMargin">
-     <number>15</number>
+     <number>20</number>
     </property>
     <property name="topMargin">
      <number>20</number>
@@ -67,6 +67,18 @@
     </property>
     <item row="0" column="0">
      <widget class="QLabel" name="gasIndexLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>160</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="text">
        <string>Schwellwert Gaspedal (0-25%)</string>
       </property>
@@ -208,6 +220,18 @@
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="brakeIndexLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>160</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="text">
        <string>Schwellwert Bremspedal (0-25%)</string>
       </property>
@@ -215,6 +239,18 @@
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="bumpingLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>160</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="text">
        <string>Index Bumping (0-10)</string>
       </property>

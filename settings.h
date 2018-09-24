@@ -45,6 +45,9 @@ public:
     qint32 getBumpingIndex() const;
     void setBumpingIndex(const qint32 &bumpingIndex);
 
+    qint32 getWindFanIndex() const;
+    void setWindFanIndex(const qint32 &windFanIndex);
+
 Q_SIGNALS:
     void wheelSlipPortChanged();
     void ledFlagPortChanged();
@@ -67,6 +70,7 @@ private:
     qint32 m_brakeIndex;
     qint32 m_gasIndex;
     qint32 m_bumpingIndex;
+    qint32 m_windFanIndex;
 };
 
 #endif // SETTINGS_698F9153BC7A4C5289DDC784D0BBB172

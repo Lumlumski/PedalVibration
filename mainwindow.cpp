@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_wheelSlipConfig(new WheelSlipConfiguration(this))
+    , m_windFanConfig(new WindFanConfiguration(this))
     , m_initializing(true)
 {
     ui->setupUi(this);
@@ -625,9 +626,16 @@ void MainWindow::showWindFanPage(bool show)
     }
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_configureWheelSlipButton_clicked()
 {
     this->setEnabled(false);
     m_wheelSlipConfig->setEnabled(true);
     m_wheelSlipConfig->show();
+}
+
+void MainWindow::on_configureWindFanButton_clicked()
+{
+    this->setEnabled(false);
+    m_windFanConfig->setEnabled(true);
+    m_windFanConfig->show();
 }

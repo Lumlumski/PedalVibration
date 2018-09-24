@@ -20,6 +20,9 @@ static const qint32 GAS_INDEX_MAX = 25;
 static const QString BUMPING_INDEX = "BumpingIndex";
 static const qint32 BUMPING_INDEX_MIN = 0;
 static const qint32 BUMPING_INDEX_MAX = 10;
+static const QString WIND_FAN_INDEX = "WindFanIndex";
+static const qint32 WIND_FAN_INDEX_MIN = 0;
+static const qint32 WIND_FAN_INDEX_MAX = 10;
 
 
 Settings::Settings(QObject *parent)
@@ -102,6 +105,12 @@ void Settings::loadSettings()
     if ((bumpingIndex >= BUMPING_INDEX_MIN) && (bumpingIndex <= BUMPING_INDEX_MAX))
     {
         m_bumpingIndex = bumpingIndex;
+    }
+
+    qint32 windFanIndex = settings.value(WIND_FAN_INDEX, 5).toInt();
+    if ((windFanIndex >= WIND_FAN_INDEX_MIN) && (windFanIndex <= WIND_FAN_INDEX_MAX))
+    {
+        m_windFanIndex = windFanIndex;
     }
 }
 
@@ -262,5 +271,19 @@ void Settings::setBumpingIndex(const qint32 &bumpingIndex)
     {
         m_bumpingIndex = bumpingIndex;
         QSettings().setValue(BUMPING_INDEX, m_bumpingIndex);
+    }
+}
+
+qint32 Settings::getWindFanIndex() const
+{
+    return m_windFanIndex;
+}
+
+void Settings::setWindFanIndex(const qint32 &windFanIndex)
+{
+    if (m_windFanIndex != windFanIndex)
+    {
+        m_windFanIndex = windFanIndex;
+        QSettings().setValue(WIND_FAN_INDEX, m_windFanIndex);
     }
 }

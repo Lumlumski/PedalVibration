@@ -35,7 +35,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_wheelSlip">
      <attribute name="title">
@@ -224,7 +224,7 @@
        <string>Enable Wheel Slip Detection</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="configureWheelSlipButton">
       <property name="geometry">
        <rect>
         <x>330</x>
@@ -279,6 +279,22 @@
       </property>
       <property name="text">
        <string>Enable LED Flag</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="configureLedFlagButton">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>330</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Configure</string>
       </property>
      </widget>
     </widget>
@@ -365,6 +381,19 @@
       </property>
       <property name="text">
        <string>kph</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="configureWindFanButton">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>330</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Configure</string>
       </property>
      </widget>
     </widget>

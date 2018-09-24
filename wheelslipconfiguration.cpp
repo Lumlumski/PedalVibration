@@ -10,7 +10,7 @@ WheelSlipConfiguration::WheelSlipConfiguration(MainWindow *parent)
     , m_parent(parent)
 {
     ui->setupUi(this);
-    this->setFixedSize(400, 300);
+    this->setFixedSize(400, 220);
 
     readDataFromSettings();
 }

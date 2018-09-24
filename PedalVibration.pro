@@ -29,7 +29,8 @@ SOURCES += \
     telemetryreader.cpp \
     assettocorsadata.cpp \
     settings.cpp \
-    wheelslipconfiguration.cpp
+    wheelslipconfiguration.cpp \
+    windfanconfiguration.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,11 +39,13 @@ HEADERS += \
     assettocorsadata.h \
     sharedfileout.h \
     settings.h \
-    wheelslipconfiguration.h
+    wheelslipconfiguration.h \
+    windfanconfiguration.h
 
 FORMS += \
         mainwindow.ui \
-    wheelslipconfiguration.ui
+    wheelslipconfiguration.ui \
+    windfanconfiguration.ui
 
 DISTFILES +=
 

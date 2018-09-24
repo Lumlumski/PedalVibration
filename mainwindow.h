@@ -9,6 +9,7 @@
 #include "telemetryreader.h"
 #include "settings.h"
 #include "wheelslipconfiguration.h"
+#include "windfanconfiguration.h"
 
 namespace Ui {
 class MainWindow;
@@ -80,7 +81,8 @@ private Q_SLOTS:
     void on_enableLedFlagCheckBox_clicked(bool checked);
     void on_enableWindFanCheckBox_clicked(bool checked);
 
-    void on_pushButton_clicked();
+    void on_configureWheelSlipButton_clicked();
+    void on_configureWindFanButton_clicked();
 
 private:
     void setupTelemetyReader();
@@ -110,6 +112,7 @@ private:
     SerialThread m_windFanSerialThread;
     TelemetryReader m_telemetryReader;
     WheelSlipConfiguration* const m_wheelSlipConfig;
+    WindFanConfiguration* const m_windFanConfig;
 
     QSystemTrayIcon *m_trayIcon;
     QMenu *m_trayIconMenu;

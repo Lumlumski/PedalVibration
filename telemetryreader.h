@@ -82,6 +82,7 @@ private:
     void sendWheelSlip();
     void sendLedFlag();
     void sendWindFan();
+    void readSettings();
 
     QTimer m_readTimer;
     qint32 m_standbyInterval;
@@ -91,8 +92,9 @@ private:
 
     bool m_readStaticData;
     WheelValueFloat m_tyreRadius;
-    const float BRAKE_INDEX = 0.98f;
-    const float GAS_INDEX = 1.08f;
+    float m_brakeIndex = 0.0f;
+    float m_gasIndex = 0.0f;
+    qint32 m_bumpingIndex = 0;
     qint32 m_speed;
     qint32 m_lastSpeed;
     bool m_lastBumping;

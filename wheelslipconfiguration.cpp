@@ -10,6 +10,7 @@ WheelSlipConfiguration::WheelSlipConfiguration(MainWindow *parent)
     , m_parent(parent)
 {
     ui->setupUi(this);
+    this->setFixedSize(400, 300);
 
     readDataFromSettings();
 }
@@ -28,7 +29,7 @@ void WheelSlipConfiguration::readDataFromSettings()
     m_bumpingIndex = settings->getBumpingIndex();
     ui->gasIndexPercLabel->setText(QString::number(m_gasIndex) + " %");
     ui->brakeIndexPercLabel->setText(QString::number(m_brakeIndex) + " %");
-    ui->bumpingIndexPercLabel->setText(QString::number(m_bumpingIndex) + " %");
+    ui->bumpingIndexPercLabel->setText(QString::number(m_bumpingIndex));
     ui->gasIndexSlider->setValue(m_gasIndex);
     ui->brakeIndexSlider->setValue(m_brakeIndex);
     ui->bumpingIndexSlider->setValue(m_bumpingIndex);
@@ -64,7 +65,7 @@ void WheelSlipConfiguration::on_brakeIndexSlider_valueChanged(qint32 value)
 
 void WheelSlipConfiguration::on_bumpingIndexSlider_valueChanged(int value)
 {
-    ui->bumpingIndexPercLabel->setText(QString::number(value) + " %");
+    ui->bumpingIndexPercLabel->setText(QString::number(value));
     m_bumpingIndex = value;
 }
 

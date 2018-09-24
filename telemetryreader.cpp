@@ -7,6 +7,7 @@
 #include <QBuffer>
 #include <QDataStream>
 #include <QtEndian>
+#include "settings.h"
 
 
 enum ID
@@ -33,6 +34,7 @@ TelemetryReader::TelemetryReader(QObject *parent)
 TelemetryReader::~TelemetryReader()
 {
     m_readTimer.stop();
+    (void)disconnect(this);
 }
 
 void TelemetryReader::run()
@@ -110,6 +112,8 @@ void TelemetryReader::readData()
         m_tyreRadius.rearRight = m_acData.getTyreRadius(Wheel::RearRight);
         m_readStaticData = true;
     }
+
+    readSettings();
 
     m_lastSpeed = m_speed;
     m_speed = qRound(m_acData.getSpeedKmh());
@@ -266,8 +270,15 @@ void TelemetryReader::readData()
     // Let everything vibrate a bit if bumping was detected
     if (bumping)
     {
-        if (m_maxBrakeValue < 3) m_maxBrakeValue = 3;
-        if (m_maxGasValue < 3) m_maxGasValue = 3;
+        if (m_maxBrakeValue < m_bumpingIndex)
+        {
+            m_maxBrakeValue = m_bumpingIndex;
+        }
+
+        if (m_maxGasValue < m_bumpingIndex)
+        {
+            m_maxGasValue = m_bumpingIndex;
+        }
     }
 
     // Only send if something has changed
@@ -279,6 +290,18 @@ void TelemetryReader::readData()
     // Save current values for comparison with future values
     m_lastMaxBrakeValue = m_maxBrakeValue;
     m_lastMaxGasValue = m_maxGasValue;
+}
+
+void TelemetryReader::readSettings()
+{
+    Settings* settings = Settings::getInstance();
+    m_brakeIndex = (static_cast<float>(100 - settings->getBrakeIndex()) / 100);
+    m_gasIndex = (static_cast<float>(settings->getGasIndex()) / 100);
+    m_bumpingIndex = settings->getBumpingIndex();
+
+    qDebug() << "BrakeIndex:" << m_brakeIndex;
+    qDebug() << "GasIndex:" << m_gasIndex;
+    qDebug() << "BumpingIndex:" << m_bumpingIndex;
 }
 
 bool TelemetryReader::dataChanged()
@@ -324,11 +347,11 @@ WheelSlipStatus TelemetryReader::getSlipStatus(float slipValue, float calculated
     {
         return NotSlipping;
     }
-    else if (calculatedSpeed < (m_speed * BRAKE_INDEX))
+    else if (calculatedSpeed < (m_speed * m_brakeIndex))
     {
         return SlippingFromBraking;
     }
-    else if (calculatedSpeed > (m_speed * GAS_INDEX))
+    else if (calculatedSpeed > (m_speed * m_gasIndex))
     {
         return SlippingFromGas;
     }

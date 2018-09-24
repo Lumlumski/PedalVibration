@@ -12,8 +12,15 @@ static const QString UPS = "UPS";
 static const QString MINIMIZE_WITH_X = "MinimizeWithX";
 
 static const QString BRAKE_INDEX = "BrakeIndex";
+static const qint32 BRAKE_INDEX_MIN = 0;
+static const qint32 BRAKE_INDEX_MAX = 25;
 static const QString GAS_INDEX = "GasIndex";
+static const qint32 GAS_INDEX_MIN = 0;
+static const qint32 GAS_INDEX_MAX = 25;
 static const QString BUMPING_INDEX = "BumpingIndex";
+static const qint32 BUMPING_INDEX_MIN = 0;
+static const qint32 BUMPING_INDEX_MAX = 10;
+
 
 Settings::Settings(QObject *parent)
     : QObject(parent)
@@ -80,19 +87,19 @@ void Settings::loadSettings()
     m_minimizeWithX = settings.value(MINIMIZE_WITH_X, false).toBool();
 
     qint32 brakeIndex = settings.value(BRAKE_INDEX, 2).toInt();
-    if ((brakeIndex >= 0) && (brakeIndex <= 100))
+    if ((brakeIndex >= BRAKE_INDEX_MIN) && (brakeIndex <= BRAKE_INDEX_MAX))
     {
         m_brakeIndex = brakeIndex;
     }
 
     qint32 gasIndex = settings.value(GAS_INDEX, 8).toInt();
-    if ((gasIndex >= 0) && (gasIndex <= 100))
+    if ((gasIndex >= GAS_INDEX_MIN) && (gasIndex <= GAS_INDEX_MAX))
     {
         m_gasIndex = gasIndex;
     }
 
     qint32 bumpingIndex = settings.value(BUMPING_INDEX, 3).toInt();
-    if ((bumpingIndex >= 0) && (bumpingIndex <= 100))
+    if ((bumpingIndex >= BUMPING_INDEX_MIN) && (bumpingIndex <= BUMPING_INDEX_MAX))
     {
         m_bumpingIndex = bumpingIndex;
     }

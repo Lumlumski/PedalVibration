@@ -10,6 +10,12 @@
     <height>300</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Configure Wheel Slip Detection</string>
   </property>
@@ -37,13 +43,16 @@
   <widget class="QWidget" name="formLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>0</x>
      <y>10</y>
-     <width>381</width>
+     <width>401</width>
      <height>221</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
+    <property name="horizontalSpacing">
+     <number>15</number>
+    </property>
     <property name="verticalSpacing">
      <number>15</number>
     </property>
@@ -51,24 +60,39 @@
      <number>15</number>
     </property>
     <property name="topMargin">
-     <number>15</number>
+     <number>20</number>
     </property>
     <property name="rightMargin">
-     <number>15</number>
+     <number>0</number>
     </property>
     <item row="0" column="0">
      <widget class="QLabel" name="gasIndexLabel">
       <property name="text">
-       <string>Index Gaspedal Vibration</string>
+       <string>Schwellwert Gaspedal (0-25%)</string>
       </property>
      </widget>
     </item>
     <item row="0" column="1">
-     <layout class="QHBoxLayout" name="gasIndexHorizLayout">
+     <layout class="QHBoxLayout" name="gasIndexHorizLayout" stretch="0,1,0">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QSlider" name="gasIndexSlider">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>140</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="maximum">
-         <number>100</number>
+         <number>25</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -93,19 +117,49 @@
       </item>
       <item>
        <widget class="QLabel" name="gasIndexPercLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>32</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
-         <string>0 %</string>
+         <string>100 %</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
      </layout>
     </item>
     <item row="1" column="1">
-     <layout class="QHBoxLayout" name="brakeIndexHorizLayout">
+     <layout class="QHBoxLayout" name="brakeIndexHorizLayout" stretch="0,1,0">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QSlider" name="brakeIndexSlider">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>140</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="maximum">
-         <number>100</number>
+         <number>25</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -130,8 +184,23 @@
       </item>
       <item>
        <widget class="QLabel" name="brakeIndexPercLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>32</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
-         <string>0 %</string>
+         <string>100 %</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -140,21 +209,39 @@
     <item row="1" column="0">
      <widget class="QLabel" name="brakeIndexLabel">
       <property name="text">
-       <string>Index Bremspedal Vibration</string>
+       <string>Schwellwert Bremspedal (0-25%)</string>
       </property>
      </widget>
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="bumpingLabel">
       <property name="text">
-       <string>Index Bumping</string>
+       <string>Index Bumping (0-10)</string>
       </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QSlider" name="bumpingIndexSlider">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>140</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximum">
+         <number>10</number>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -178,10 +265,41 @@
       </item>
       <item>
        <widget class="QLabel" name="bumpingIndexPercLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>22</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
-         <string>0 %</string>
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </item>

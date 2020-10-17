@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QDebug>
 
+
 static const QString WHEEL_SLIP_ENABLED = "WheelSlipEnabled";
 static const QString LED_FLAG_ENABLED = "LEDFlagEnabled";
 static const QString WIND_FAN_ENABLED = "WindFanEnabled";
@@ -243,6 +244,7 @@ void Settings::setBrakeIndex(const qint32 &brakeIndex)
     {
         m_brakeIndex = brakeIndex;
         QSettings().setValue(BRAKE_INDEX, m_brakeIndex);
+        Q_EMIT brakeIndexChanged();
     }
 }
 
@@ -257,6 +259,7 @@ void Settings::setGasIndex(const qint32 &gasIndex)
     {
         m_gasIndex = gasIndex;
         QSettings().setValue(GAS_INDEX, m_gasIndex);
+        Q_EMIT gasIndexChanged();
     }
 }
 
@@ -271,6 +274,7 @@ void Settings::setBumpingIndex(const qint32 &bumpingIndex)
     {
         m_bumpingIndex = bumpingIndex;
         QSettings().setValue(BUMPING_INDEX, m_bumpingIndex);
+        Q_EMIT bumpingIndexChanged();
     }
 }
 
@@ -285,5 +289,6 @@ void Settings::setWindFanIndex(const qint32 &windFanIndex)
     {
         m_windFanIndex = windFanIndex;
         QSettings().setValue(WIND_FAN_INDEX, m_windFanIndex);
+        Q_EMIT windFanIndexChanged();
     }
 }

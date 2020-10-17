@@ -3,9 +3,10 @@
 #include <QTime>
 #include <QDebug>
 
-SerialThread::SerialThread(QObject *parent) :
-    QThread(parent)
+SerialThread::SerialThread(QObject *parent)
+    : QThread(parent)
 {
+
 }
 
 SerialThread::~SerialThread()
@@ -17,11 +18,11 @@ SerialThread::~SerialThread()
     wait();
 }
 
-void SerialThread::transaction(const QString &portName, const QByteArray &request)
+void SerialThread::transaction(const QString &portName, const QByteArray &data)
 {
     const QMutexLocker locker(&m_mutex);
     m_portName = portName;
-    m_request = request;
+    m_data = data;
 
     if (!isRunning())
     {
@@ -47,7 +48,7 @@ void SerialThread::run()
     }
 
     qint32 currentWaitTimeout = m_waitTimeout;
-    QByteArray currentRequest = m_request;
+    QByteArray currentData = m_data;
     m_mutex.unlock();
     QSerialPort serial;
 
@@ -71,17 +72,17 @@ void SerialThread::run()
                 return;
             }
         }
-        // write request
-        const QByteArray requestData = currentRequest;
+        // write data
+        const QByteArray data = currentData;
 
-        qDebug() << "Request:";
-        for (qint32 i = 0; i < requestData.size(); ++i)
+        qDebug() << "Data:";
+        for (qint32 i = 0; i < data.size(); ++i)
         {
-            QChar current = requestData.at(i);
+            QChar current = data.at(i);
             qDebug() << i << ") " << QString::number(current.toLatin1());
         }
 
-        qint64 bytesSent = serial.write(requestData);
+        qint64 bytesSent = serial.write(data);
         if (serial.waitForBytesWritten(m_waitTimeout))
         {
             qDebug() << "Sent" << bytesSent << "Bytes";
@@ -120,7 +121,7 @@ void SerialThread::run()
         }
 
         //currentWaitTimeout = m_waitTimeout;
-        currentRequest = m_request;
+        currentData = m_data;
         m_mutex.unlock();
     }
 }

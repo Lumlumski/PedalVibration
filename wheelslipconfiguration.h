@@ -21,12 +21,11 @@ private Q_SLOTS:
     void on_buttonBox_rejected();
     void on_buttonBox_accepted();
 
-    void on_gasIndexSlider_valueChanged(qint32 value);
+    void on_gasIndexSlider_valueChanged(int value);
     void on_brakeIndexSlider_valueChanged(int value);
+    void on_bumpingIndexSlider_valueChanged(int value);
 
     void on_WheelSlipConfiguration_destroyed();
-
-    void on_bumpingIndexSlider_valueChanged(int value);
 
 private:
     void readDataFromSettings();

@@ -6,6 +6,7 @@
 
 class Settings : public QObject
 {
+    Q_OBJECT
 public:
     static Settings *getInstance();
     virtual ~Settings();
@@ -54,6 +55,11 @@ Q_SIGNALS:
     void windFanPortChanged();
     void upsChanged();
     void minimizeWithXChanged();
+
+    void brakeIndexChanged();
+    void gasIndexChanged();
+    void bumpingIndexChanged();
+    void windFanIndexChanged();
 
 private:
     explicit Settings(QObject* parent = nullptr);

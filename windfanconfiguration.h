@@ -21,7 +21,7 @@ private Q_SLOTS:
     void on_buttonBox_rejected();
     void on_buttonBox_accepted();
     void on_WindFanConfiguration_destroyed();
-    void on_windFanIndexSlider_valueChanged(qint32 value);
+    void on_windFanIndexSlider_valueChanged(int value);
 
 private:
     void readDataFromSettings();

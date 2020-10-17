@@ -69,6 +69,12 @@ Q_SIGNALS:
     void sendLedFlagData(const QByteArray &data);
     void sendWindFanData(const QByteArray &data);
 
+public Q_SLOTS:
+    void onGasIndexChanged();
+    void onBrakeIndexChanged();
+    void onBumpingIndexChanged();
+    void onWindFanIndexChanged();
+
 private Q_SLOTS:
     void readData();
 
@@ -95,6 +101,7 @@ private:
     float m_brakeIndex = 0.0f;
     float m_gasIndex = 0.0f;
     qint32 m_bumpingIndex = 0;
+    qint32 m_windFanIndex = 0;
     qint32 m_speed;
     qint32 m_lastSpeed;
     bool m_lastBumping;

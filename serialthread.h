@@ -21,7 +21,7 @@ private:
     void run() override;
 
     QString m_portName;
-    QByteArray m_request;
+    QByteArray m_data;
     QMutex m_mutex;
     QWaitCondition m_cond;
     qint32 m_waitTimeout = 100;

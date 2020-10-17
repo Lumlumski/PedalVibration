@@ -43,7 +43,7 @@ void WindFanConfiguration::on_buttonBox_accepted()
     settings->setWindFanIndex(m_windFanIndex);
 }
 
-void WindFanConfiguration::on_windFanIndexSlider_valueChanged(qint32 value)
+void WindFanConfiguration::on_windFanIndexSlider_valueChanged(int value)
 {
     ui->windFanIndexLabel->setText(QString::number(value));
     m_windFanIndex = value;
@@ -53,4 +53,3 @@ void WindFanConfiguration::on_WindFanConfiguration_destroyed()
 {
     m_parent->setEnabled(true);
 }
-

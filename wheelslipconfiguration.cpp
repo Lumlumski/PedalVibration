@@ -51,13 +51,13 @@ void WheelSlipConfiguration::on_buttonBox_accepted()
     settings->setBumpingIndex(m_bumpingIndex);
 }
 
-void WheelSlipConfiguration::on_gasIndexSlider_valueChanged(qint32 value)
+void WheelSlipConfiguration::on_gasIndexSlider_valueChanged(int value)
 {
     ui->gasIndexPercLabel->setText(QString::number(value) + " %");
     m_gasIndex = value;
 }
 
-void WheelSlipConfiguration::on_brakeIndexSlider_valueChanged(qint32 value)
+void WheelSlipConfiguration::on_brakeIndexSlider_valueChanged(int value)
 {
     ui->brakeIndexPercLabel->setText(QString::number(value) + " %");
     m_brakeIndex = value;

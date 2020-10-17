@@ -28,6 +28,13 @@ TelemetryReader::TelemetryReader(QObject *parent)
     , m_lastBumping(false)
 {
     (void)connect(&m_readTimer, &QTimer::timeout, this, &TelemetryReader::readData);
+
+    Settings* settings = Settings::getInstance();
+    (void)connect(settings, &Settings::gasIndexChanged, this, &TelemetryReader::onGasIndexChanged);
+    (void)connect(settings, &Settings::brakeIndexChanged, this, &TelemetryReader::onBrakeIndexChanged);
+    (void)connect(settings, &Settings::bumpingIndexChanged, this, &TelemetryReader::onBumpingIndexChanged);
+    (void)connect(settings, &Settings::windFanIndexChanged, this, &TelemetryReader::onWindFanIndexChanged);
+
     m_readTimer.setInterval(m_standbyInterval);
 }
 
@@ -45,6 +52,10 @@ void TelemetryReader::run()
         return;
     }
 
+    // Initially read settings once
+    // Changes will be notified by signals from the settings
+    readSettings();
+
     m_readTimer.start();
     qDebug() << "Started read timer";
 }
@@ -59,6 +70,28 @@ void TelemetryReader::setUpdatesPerSecond(qint32 ups)
 {
     double ms = 1000.0 / static_cast<double>(ups);
     m_liveInterval = qRound(ms + 0.5); // Round up
+}
+
+void TelemetryReader::onGasIndexChanged()
+{
+    qint32 newIndex = Settings::getInstance()->getGasIndex();
+    m_gasIndex = (static_cast<float>(newIndex) / 100);
+}
+
+void TelemetryReader::onBrakeIndexChanged()
+{
+    qint32 newIndex = Settings::getInstance()->getBrakeIndex();
+    m_brakeIndex = (static_cast<float>(100 - newIndex) / 100);
+}
+
+void TelemetryReader::onBumpingIndexChanged()
+{
+    m_bumpingIndex = Settings::getInstance()->getBumpingIndex();
+}
+
+void TelemetryReader::onWindFanIndexChanged()
+{
+    m_windFanIndex = Settings::getInstance()->getWindFanIndex();
 }
 
 void TelemetryReader::readData()
@@ -85,6 +118,7 @@ void TelemetryReader::readData()
                 m_readTimer.setInterval(m_liveInterval);
             }
 
+            // Reset wheel slip states when switching to live state
             Q_EMIT frontLeftStatusUpdated(WheelSlipStatus::NotSlipping);
             Q_EMIT frontRightStatusUpdated(WheelSlipStatus::NotSlipping);
             Q_EMIT rearLeftStatusUpdated(WheelSlipStatus::NotSlipping);
@@ -112,8 +146,6 @@ void TelemetryReader::readData()
         m_tyreRadius.rearRight = m_acData.getTyreRadius(Wheel::RearRight);
         m_readStaticData = true;
     }
-
-    readSettings();
 
     m_lastSpeed = m_speed;
     m_speed = qRound(m_acData.getSpeedKmh());
@@ -405,7 +437,7 @@ void TelemetryReader::sendLedFlag()
 
 //    QByteArray data;
 
-//    // Identifier for wheel slip functionality
+//    // Identifier for LED flag functionality
 //    data.append(ID::LEDFlag);
 //    data.append(QChar(flagStatus));
 

@@ -329,7 +329,6 @@ void TelemetryReader::calculateWheelSlip()
         quint8 brakeValue = static_cast<quint8>(qBound(0, m_maxBrakeValue, 127));
 
         Q_EMIT sendWheelSlipValues(gasValue, brakeValue);
-        //sendWheelSlip();
     }
 
     // Save current values for comparison with future values

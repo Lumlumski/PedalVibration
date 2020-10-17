@@ -4,45 +4,8 @@
 #include <QObject>
 #include <QTimer>
 #include "assettocorsadata.h"
+#include "globals.h"
 
-struct WheelValueInt
-{
-    qint32 frontLeft;
-    qint32 frontRight;
-    qint32 rearLeft;
-    qint32 rearRight;
-
-    WheelValueInt()
-    {
-        frontLeft = 0;
-        frontRight = 0;
-        rearLeft = 0;
-        rearRight = 0;
-    }
-};
-
-struct WheelValueFloat
-{
-    float frontLeft;
-    float frontRight;
-    float rearLeft;
-    float rearRight;
-
-    WheelValueFloat()
-    {
-        frontLeft = 0.0f;
-        frontRight = 0.0f;
-        rearLeft = 0.0f;
-        rearRight = 0.0f;
-    }
-};
-
-enum WheelSlipStatus
-{
-    NotSlipping,
-    SlippingFromBraking,
-    SlippingFromGas
-};
 
 class TelemetryReader : public QObject
 {
@@ -69,6 +32,11 @@ Q_SIGNALS:
     void sendLedFlagData(const QByteArray &data);
     void sendWindFanData(const QByteArray &data);
 
+    void sendInitialValues();
+    void sendWheelSlipValues(quint8 gasValue, quint8 brakeValue);
+    void sendWindFanValue(quint8 windFanValue);
+    void sendLedFlagValue(quint8 ledFlagValue);
+
 public Q_SLOTS:
     void onGasIndexChanged();
     void onBrakeIndexChanged();
@@ -84,27 +52,27 @@ private:
     float calculateSpeed(float tyreRadius, float wheelAngularSpeed);
     WheelSlipStatus getSlipStatus(float slipValue, float calculatedSpeed);
     bool dataChanged();
-    void sendInitialValues();
-    void sendWheelSlip();
-    void sendLedFlag();
-    void sendWindFan();
     void readSettings();
 
+    void calculateWheelSlip();
+    void calculateWindFanSpeed();
+
     QTimer m_readTimer;
-    qint32 m_standbyInterval;
-    qint32 m_liveInterval;
+    qint32 m_standbyInterval = 0;
+    qint32 m_liveInterval = 0;
     AssettoCorsaData m_acData;
     AC_STATUS m_lastStatus;
 
-    bool m_readStaticData;
+    bool m_readStaticData = false;
     WheelValueFloat m_tyreRadius;
     float m_brakeIndex = 0.0f;
     float m_gasIndex = 0.0f;
     qint32 m_bumpingIndex = 0;
     qint32 m_windFanIndex = 0;
-    qint32 m_speed;
-    qint32 m_lastSpeed;
-    bool m_lastBumping;
+    qint32 m_speed = 0;
+    qint32 m_lastSpeed = 0;
+    quint8 m_lastWindFanValue = 0;
+    bool m_lastBumping = false;
     //qint32 m_flagStatus;
 
     WheelSlipStatus m_oldFrontLeftSlipStatus = NotSlipping;

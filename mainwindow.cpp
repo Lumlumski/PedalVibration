@@ -52,9 +52,10 @@ void MainWindow::setupTelemetyReader()
     (void)connect(&m_telemetryReader, &TelemetryReader::speedUpdated, this, &MainWindow::onSpeedUpdated);
 
     // Serial
-    (void)connect(&m_telemetryReader, &TelemetryReader::sendWheelSlipData, this, &MainWindow::onSendWheelSlipData);
-    (void)connect(&m_telemetryReader, &TelemetryReader::sendLedFlagData, this, &MainWindow::onSendLedFlagData);
-    (void)connect(&m_telemetryReader, &TelemetryReader::sendWindFanData, this, &MainWindow::onSendWindFanData);
+    (void)connect(&m_telemetryReader, &TelemetryReader::sendInitialValues, &m_sender, &Sender::onSendInitialValues);
+    (void)connect(&m_telemetryReader, &TelemetryReader::sendWheelSlipValues, &m_sender, &Sender::onSendWheelSlipValues);
+    (void)connect(&m_telemetryReader, &TelemetryReader::sendWindFanValue, &m_sender, &Sender::onSendWindFanValue);
+    (void)connect(&m_telemetryReader, &TelemetryReader::sendLedFlagValue, &m_sender, &Sender::onSendLedFlagValue);
 }
 
 void MainWindow::setupTrayIcon()
@@ -244,6 +245,7 @@ void MainWindow::setupSerialPortList()
             wheelSlipPortSelectedIndex = i;
             m_wheelSlipPort = m_serialPorts[i];
             ui->wheelSlipPortComboBox->setCurrentIndex(i);
+            Settings::getInstance()->setWheelSlipPortActive(true);
         }
 
         if (m_serialPorts[i].portName == ledFlagPort)
@@ -251,6 +253,7 @@ void MainWindow::setupSerialPortList()
             ledFlagPortSelectedIndex = i;
             m_ledFlagPort = m_serialPorts[i];
             ui->ledFlagPortComboBox->setCurrentIndex(i);
+            Settings::getInstance()->setLedFlagPortActive(true);
         }
 
         if (m_serialPorts[i].portName == windFanPort)
@@ -258,6 +261,7 @@ void MainWindow::setupSerialPortList()
             windFanPortSelectedIndex = i;
             m_windFanPort = m_serialPorts[i];
             ui->windFanPortComboBox->setCurrentIndex(i);
+            Settings::getInstance()->setWindFanPortActive(true);
         }
     }
 
@@ -442,56 +446,6 @@ void MainWindow::onSpeedUpdated(qint32 speed)
     ui->speedLineEdit->setText(QString::number(speed));
 }
 
-void MainWindow::onSendWheelSlipData(const QByteArray &data)
-{
-    if (!Settings::getInstance()->getWheelSlipEnabled())
-    {
-        qDebug() << "sendWheelSlipData not enabled";
-        return;
-    }
-
-    QString port = Settings::getInstance()->getWheelSlipPort();
-    if (port.isEmpty())
-    {
-        qDebug() << "Port not found";
-        return;
-    }
-
-    m_wheelSlipSerialThread.transaction(port, data);
-}
-
-void MainWindow::onSendLedFlagData(const QByteArray &data)
-{
-    if (!Settings::getInstance()->getLedFlagEnabled())
-    {
-        return;
-    }
-
-    QString port = Settings::getInstance()->getLedFlagPort();
-    if (port.isEmpty())
-    {
-        return;
-    }
-
-    m_ledFlagSerialThread.transaction(port, data);
-}
-
-void MainWindow::onSendWindFanData(const QByteArray &data)
-{
-    if (!Settings::getInstance()->getWindFanEnabled())
-    {
-        return;
-    }
-
-    QString port = Settings::getInstance()->getWindFanPort();
-    if (port.isEmpty())
-    {
-        return;
-    }
-
-    m_windFanSerialThread.transaction(port, data);
-}
-
 void MainWindow::on_wheelSlipPortComboBox_currentIndexChanged(int index)
 {
     if (!m_initializing)
@@ -566,32 +520,6 @@ void MainWindow::on_enableWindFanCheckBox_clicked(bool checked)
     }
 
     showWindFanPage(checked);
-    if (!checked)
-    {
-        sendStopFan();
-    }
-}
-
-void MainWindow::sendStopFan()
-{
-    qint32 bytesWritten = 0;
-    QByteArray data;
-
-    data.append(0x02);
-    ++bytesWritten;
-
-    for (qint32 i = bytesWritten; i < 8; ++i)
-    {
-        data.append(QChar(0));
-    }
-
-    QString port = Settings::getInstance()->getWindFanPort();
-    if (port.isEmpty())
-    {
-        return;
-    }
-
-    m_windFanSerialThread.transaction(port, data);
 }
 
 void MainWindow::showWheelSlipPage(bool show)

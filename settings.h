@@ -49,6 +49,14 @@ public:
     qint32 getWindFanIndex() const;
     void setWindFanIndex(const qint32 &windFanIndex);
 
+    bool isWheelSlipPortActive() const;
+    bool isLedFlagPortActive() const;
+    bool isWindFanPortActive() const;
+
+    void setWheelSlipPortActive(bool wheelSlipPortActive);
+    void setLedFlagPortActive(bool ledFlagPortActive);
+    void setWindFanPortActive(bool windFanPortActive);
+
 Q_SIGNALS:
     void wheelSlipPortChanged();
     void ledFlagPortChanged();
@@ -61,17 +69,24 @@ Q_SIGNALS:
     void bumpingIndexChanged();
     void windFanIndexChanged();
 
+    void wheelSlipEnabledChanged();
+    void windFanEnabledChanged();
+    void ledFlagEnabledChanged();
+
 private:
     explicit Settings(QObject* parent = nullptr);
 
-    bool m_wheelSlipEnabled;
-    bool m_ledFlagEnabled;
-    bool m_windFanEnabled;
+    bool m_wheelSlipEnabled = false;
+    bool m_ledFlagEnabled = false;
+    bool m_windFanEnabled = false;
     QString m_wheelSlipPort;
     QString m_ledFlagPort;
     QString m_windFanPort;
+    bool m_wheelSlipPortActive = false;
+    bool m_ledFlagPortActive = false;
+    bool m_windFanPortActive = false;
     qint32 m_ups;
-    bool m_minimizeWithX;
+    bool m_minimizeWithX = false;
 
     qint32 m_brakeIndex;
     qint32 m_gasIndex;

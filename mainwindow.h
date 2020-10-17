@@ -10,6 +10,8 @@
 #include "settings.h"
 #include "wheelslipconfiguration.h"
 #include "windfanconfiguration.h"
+#include "sender.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -63,9 +65,6 @@ public Q_SLOTS:
     void onRearLeftStatusUpdated(WheelSlipStatus status);
     void onRearRightStatusUpdated(WheelSlipStatus status);
     void onSpeedUpdated(qint32 speed);
-    void onSendWheelSlipData(const QByteArray &data);
-    void onSendLedFlagData(const QByteArray &data);
-    void onSendWindFanData(const QByteArray &data);
 
 private Q_SLOTS:
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -107,9 +106,7 @@ private:
     void showAppStartedMessage();
 
     Ui::MainWindow *ui;
-    SerialThread m_wheelSlipSerialThread;
-    SerialThread m_ledFlagSerialThread;
-    SerialThread m_windFanSerialThread;
+    Sender m_sender;
     TelemetryReader m_telemetryReader;
     WheelSlipConfiguration* const m_wheelSlipConfig;
     WindFanConfiguration* const m_windFanConfig;

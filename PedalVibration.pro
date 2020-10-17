@@ -30,7 +30,8 @@ SOURCES += \
     assettocorsadata.cpp \
     settings.cpp \
     wheelslipconfiguration.cpp \
-    windfanconfiguration.cpp
+    windfanconfiguration.cpp \
+    sender.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,7 +41,9 @@ HEADERS += \
     sharedfileout.h \
     settings.h \
     wheelslipconfiguration.h \
-    windfanconfiguration.h
+    windfanconfiguration.h \
+    sender.h \
+    globals.h
 
 FORMS += \
         mainwindow.ui \

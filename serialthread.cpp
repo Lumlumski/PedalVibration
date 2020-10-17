@@ -73,16 +73,16 @@ void SerialThread::run()
             }
         }
         // write data
-        const QByteArray data = currentData;
+        const QByteArray currentDataConst = currentData;
 
         qDebug() << "Data:";
-        for (qint32 i = 0; i < data.size(); ++i)
+        for (qint32 i = 0; i < currentDataConst.size(); ++i)
         {
-            QChar current = data.at(i);
-            qDebug() << i << ") " << QString::number(current.toLatin1());
+            unsigned char current = static_cast<unsigned char>(currentDataConst.at(i));
+            qDebug() << i << ") " << current;
         }
 
-        qint64 bytesSent = serial.write(data);
+        qint64 bytesSent = serial.write(currentDataConst);
         if (serial.waitForBytesWritten(m_waitTimeout))
         {
             qDebug() << "Sent" << bytesSent << "Bytes";

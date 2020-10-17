@@ -40,6 +40,36 @@ Settings::Settings(QObject *parent)
     loadSettings();
 }
 
+void Settings::setWindFanPortActive(bool windFanPortActive)
+{
+    m_windFanPortActive = windFanPortActive;
+}
+
+void Settings::setLedFlagPortActive(bool ledFlagPortActive)
+{
+    m_ledFlagPortActive = ledFlagPortActive;
+}
+
+void Settings::setWheelSlipPortActive(bool wheelSlipPortActive)
+{
+    m_wheelSlipPortActive = wheelSlipPortActive;
+}
+
+bool Settings::isWheelSlipPortActive() const
+{
+    return m_wheelSlipPortActive;
+}
+
+bool Settings::isLedFlagPortActive() const
+{
+    return m_ledFlagPortActive;
+}
+
+bool Settings::isWindFanPortActive() const
+{
+    return m_windFanPortActive;
+}
+
 Settings* Settings::getInstance()
 {
     static Settings* settings;
@@ -127,6 +157,7 @@ void Settings::setWheelSlipEnabled(bool wheelSlipEnabled)
         qDebug() << "Settings::setWheelSlipEnabled(" << wheelSlipEnabled << ")";
         m_wheelSlipEnabled = wheelSlipEnabled;
         QSettings().setValue(WHEEL_SLIP_ENABLED, m_wheelSlipEnabled);
+        Q_EMIT wheelSlipEnabledChanged();
     }
 }
 
@@ -142,6 +173,7 @@ void Settings::setLedFlagEnabled(bool ledFlagEnabled)
         qDebug() << "Settings::setLedFlagEnabled(" << ledFlagEnabled << ")";
         m_ledFlagEnabled = ledFlagEnabled;
         QSettings().setValue(LED_FLAG_ENABLED, m_ledFlagEnabled);
+        Q_EMIT ledFlagEnabledChanged();
     }
 }
 
@@ -157,6 +189,7 @@ void Settings::setWindFanEnabled(bool windFanEnabled)
         qDebug() << "Settings::setWindFanEnabled(" << windFanEnabled << ")";
         m_windFanEnabled = windFanEnabled;
         QSettings().setValue(WIND_FAN_ENABLED, m_windFanEnabled);
+        Q_EMIT windFanEnabledChanged();
     }
 }
 

@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_initializing(true)
 {
     ui->setupUi(this);
-    this->setFixedSize(450, 450);
+    this->setFixedSize(450, 370);
     ui->bumpingLabel->setVisible(false);
     ui->tabWidget->setCurrentIndex(0);
 

@@ -209,6 +209,11 @@ float AssettoCorsaData::getWheelLoad(Wheel wheel)
     return 0.0;
 }
 
+AC_FLAG_TYPE AssettoCorsaData::getFlagStatus()
+{
+    return m_pfg->flag;
+}
+
 void AssettoCorsaData::initPhysics()
 {
     TCHAR szName[] = TEXT("Local\\acpmf_physics");

@@ -27,10 +27,8 @@ Q_SIGNALS:
     void rearLeftStatusUpdated(WheelSlipStatus status);
     void rearRightStatusUpdated(WheelSlipStatus status);
     void speedUpdated(qint32 speed);
+    void flagStatusUpdated(AC_FLAG_TYPE flagStatus);
     void error(const QString &error);
-    void sendWheelSlipData(const QByteArray &data);
-    void sendLedFlagData(const QByteArray &data);
-    void sendWindFanData(const QByteArray &data);
 
     void sendInitialValues();
     void sendWheelSlipValues(quint8 gasValue, quint8 brakeValue);
@@ -55,6 +53,7 @@ private:
     void readSettings();
 
     void calculateWheelSlip();
+    void calculateLedFlagStatus();
     void calculateWindFanSpeed();
 
     QTimer m_readTimer;
@@ -73,7 +72,7 @@ private:
     qint32 m_lastSpeed = 0;
     quint8 m_lastWindFanValue = 0;
     bool m_lastBumping = false;
-    //qint32 m_flagStatus;
+    AC_FLAG_TYPE m_lastFlagStatus = AC_NO_FLAG;
 
     WheelSlipStatus m_oldFrontLeftSlipStatus = NotSlipping;
     WheelSlipStatus m_oldFrontRightSlipStatus = NotSlipping;

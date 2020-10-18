@@ -124,4 +124,6 @@ void SerialThread::run()
         currentData = m_data;
         m_mutex.unlock();
     }
+
+    serial.close();
 }

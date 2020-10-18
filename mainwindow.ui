@@ -297,6 +297,132 @@
        <string>Configure</string>
       </property>
      </widget>
+     <widget class="QLabel" name="currentFlagLabel">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>116</y>
+        <width>81</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Current flag</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="currentFlagLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>196</x>
+        <y>117</y>
+        <width>101</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>--</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="blueFlagTestButton">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>190</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Blue</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="yellowFlagTestButton">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>220</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Yellow</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="blackFlagTestButton">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>190</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Black</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="checkeredFlagTestButton">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>220</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Checkered</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="whiteFlagTestButton">
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>190</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>White</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="noFlagTestButton">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>160</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>No flag</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="penaltyFlagTestButton">
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>220</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Penalty</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_windFan">
      <attribute name="title">

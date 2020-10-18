@@ -50,6 +50,7 @@ void MainWindow::setupTelemetyReader()
     (void)connect(&m_telemetryReader, &TelemetryReader::rearLeftStatusUpdated, this, &MainWindow::onRearLeftStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::rearRightStatusUpdated, this, &MainWindow::onRearRightStatusUpdated);
     (void)connect(&m_telemetryReader, &TelemetryReader::speedUpdated, this, &MainWindow::onSpeedUpdated);
+    (void)connect(&m_telemetryReader, &TelemetryReader::flagStatusUpdated, this, &MainWindow::onFlagStatusUpdated);
 
     // Serial
     (void)connect(&m_telemetryReader, &TelemetryReader::sendInitialValues, &m_sender, &Sender::onSendInitialValues);
@@ -446,6 +447,41 @@ void MainWindow::onSpeedUpdated(qint32 speed)
     ui->speedLineEdit->setText(QString::number(speed));
 }
 
+void MainWindow::onFlagStatusUpdated(AC_FLAG_TYPE flagStatus)
+{
+    QString currentFlag = "--";
+
+    switch (flagStatus)
+    {
+    case AC_BLUE_FLAG:
+        currentFlag = "Blue flag";
+        break;
+    case AC_YELLOW_FLAG:
+        currentFlag = "Yellow flag";
+        break;
+    case AC_BLACK_FLAG:
+        currentFlag = "Black flag";
+        break;
+    case AC_WHITE_FLAG:
+        currentFlag = "White flag";
+        break;
+    case AC_CHECKERED_FLAG:
+        currentFlag = "Checkered flag";
+        break;
+    case AC_PENALTY_FLAG:
+        currentFlag = "Penalty flag";
+        break;
+    case AC_NO_FLAG:
+        currentFlag = "No flag";
+        break;
+    default:
+        break;
+    }
+
+    qDebug() << "Current flag:" << currentFlag;
+    ui->currentFlagLineEdit->setText(currentFlag);
+}
+
 void MainWindow::on_wheelSlipPortComboBox_currentIndexChanged(int index)
 {
     if (!m_initializing)
@@ -509,6 +545,11 @@ void MainWindow::on_enableLedFlagCheckBox_clicked(bool checked)
         Settings::getInstance()->setLedFlagEnabled(checked);
     }
 
+    if (!checked)
+    {
+        ui->currentFlagLineEdit->setText("--");
+    }
+
     showLedFlagPage(checked);
 }
 
@@ -566,4 +607,39 @@ void MainWindow::on_configureWindFanButton_clicked()
     this->setEnabled(false);
     m_windFanConfig->setEnabled(true);
     m_windFanConfig->show();
+}
+
+void MainWindow::on_noFlagTestButton_clicked()
+{
+    m_sender.onSendLedFlagValue(0);
+}
+
+void MainWindow::on_blueFlagTestButton_clicked()
+{
+    m_sender.onSendLedFlagValue(1);
+}
+
+void MainWindow::on_blackFlagTestButton_clicked()
+{
+    m_sender.onSendLedFlagValue(3);
+}
+
+void MainWindow::on_whiteFlagTestButton_clicked()
+{
+    m_sender.onSendLedFlagValue(4);
+}
+
+void MainWindow::on_yellowFlagTestButton_clicked()
+{
+    m_sender.onSendLedFlagValue(2);
+}
+
+void MainWindow::on_checkeredFlagTestButton_clicked()
+{
+    m_sender.onSendLedFlagValue(5);
+}
+
+void MainWindow::on_penaltyFlagTestButton_clicked()
+{
+    m_sender.onSendLedFlagValue(6);
 }

@@ -65,6 +65,7 @@ public Q_SLOTS:
     void onRearLeftStatusUpdated(WheelSlipStatus status);
     void onRearRightStatusUpdated(WheelSlipStatus status);
     void onSpeedUpdated(qint32 speed);
+    void onFlagStatusUpdated(AC_FLAG_TYPE flagStatus);
 
 private Q_SLOTS:
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -82,6 +83,15 @@ private Q_SLOTS:
 
     void on_configureWheelSlipButton_clicked();
     void on_configureWindFanButton_clicked();
+
+    // Flag test buttons
+    void on_noFlagTestButton_clicked();
+    void on_blueFlagTestButton_clicked();
+    void on_blackFlagTestButton_clicked();
+    void on_whiteFlagTestButton_clicked();
+    void on_yellowFlagTestButton_clicked();
+    void on_checkeredFlagTestButton_clicked();
+    void on_penaltyFlagTestButton_clicked();
 
 private:
     void setupTelemetyReader();

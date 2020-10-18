@@ -2,6 +2,7 @@
 #define SENDER_6C348842166C430B809BD8E73B5AF2FC
 
 #include <QObject>
+#include <QMap>
 #include <bitset>
 #include "serialthread.h"
 #include "globals.h"
@@ -24,6 +25,8 @@ public Q_SLOTS:
     void onWindFanEnabledChanged();
     void onLedFlagEnabledChanged();
 
+    void onSelectedPortsChanged();
+
 private Q_SLOTS:
     void onSerialError(const QString &error);
 
@@ -31,9 +34,11 @@ private:
     template <unsigned int N>
     QByteArray bitsetToQByteArray(std::bitset<BYTE_SIZE*N> data);
 
-    SerialThread m_wheelSlipSerialThread;
-    SerialThread m_ledFlagSerialThread;
-    SerialThread m_windFanSerialThread;
+    //SerialThread m_wheelSlipSerialThread;
+    //SerialThread m_ledFlagSerialThread;
+    //SerialThread m_windFanSerialThread;
+
+    QMap<QString, SerialThread*> m_serialThreads;
 
 };
 

@@ -1,6 +1,7 @@
 #ifndef SERIALTHREAD_FF743A8002DA468BA6F0DE694971841D
 #define SERIALTHREAD_FF743A8002DA468BA6F0DE694971841D
 
+#include <QSerialPort>
 #include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
@@ -20,6 +21,7 @@ Q_SIGNALS:
 private:
     void run() override;
 
+    QSerialPort m_serial;
     QString m_portName;
     QByteArray m_data;
     QMutex m_mutex;

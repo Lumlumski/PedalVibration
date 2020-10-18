@@ -44,6 +44,8 @@ public:
     float getRideHeight(int index);
     
     float getWheelLoad(Wheel wheel);
+
+    AC_FLAG_TYPE getFlagStatus();
     
 private:
     void initPhysics();

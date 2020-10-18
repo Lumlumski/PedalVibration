@@ -140,14 +140,43 @@ void TelemetryReader::readData()
         m_readStaticData = true;
     }
 
-    if (Settings::getInstance()->getWindFanEnabled())
+    m_lastSpeed = m_speed;
+
+    qint32 wheelAngularSpeedFL = qRound(m_acData.getWheelAngularSpeed(Wheel::FrontLeft));
+    qint32 wheelAngularSpeedFR = qRound(m_acData.getWheelAngularSpeed(Wheel::FrontRight));
+    qint32 wheelAngularSpeedRL = qRound(m_acData.getWheelAngularSpeed(Wheel::RearLeft));
+    qint32 wheelAngularSpeedRR = qRound(m_acData.getWheelAngularSpeed(Wheel::RearRight));
+
+    if ((wheelAngularSpeedFL <= 0)
+            && (wheelAngularSpeedFR <= 0)
+            && (wheelAngularSpeedRL <= 0)
+            && (wheelAngularSpeedRR <= 0))
     {
-        calculateWindFanSpeed();
+        m_speed = 0;
+    }
+    else
+    {
+        m_speed = qRound(m_acData.getSpeedKmh());
+    }
+
+    if (m_speed != m_lastSpeed)
+    {
+        Q_EMIT speedUpdated(m_speed);
     }
 
     if (Settings::getInstance()->getWheelSlipEnabled())
     {
         calculateWheelSlip();
+    }
+
+    if (Settings::getInstance()->getLedFlagEnabled())
+    {
+        calculateLedFlagStatus();
+    }
+
+    if (Settings::getInstance()->getWindFanEnabled())
+    {
+        calculateWindFanSpeed();
     }
 }
 
@@ -379,43 +408,68 @@ WheelSlipStatus TelemetryReader::getSlipStatus(float slipValue, float calculated
     {
         return NotSlipping;
     }
-    else if (calculatedSpeed < (m_speed * m_brakeIndex))
+    else
     {
-        return SlippingFromBraking;
-    }
-    else if (calculatedSpeed > (m_speed * m_gasIndex))
-    {
-        return SlippingFromGas;
+        qDebug() << "SlipValue:" << slipValue << "| calculated speed:" << calculatedSpeed << "| speed:" << m_speed << "| brakeIndex:" << m_brakeIndex;
+        qDebug() << "speed*brakeIndex =" << (m_speed * m_brakeIndex);
+
+        if (calculatedSpeed < (m_speed * m_brakeIndex))
+        {
+            return SlippingFromBraking;
+        }
+        else if (calculatedSpeed > (m_speed * m_gasIndex))
+        {
+            return SlippingFromGas;
+        }
     }
 
     return NotSlipping;
 }
 
+void TelemetryReader::calculateLedFlagStatus()
+{
+    AC_FLAG_TYPE flagStatus =  m_acData.getFlagStatus();
+    if (flagStatus == m_lastFlagStatus)
+    {
+        return;
+    }
+
+    Q_EMIT flagStatusUpdated(flagStatus);
+    m_lastFlagStatus = flagStatus;
+
+    quint8 flagValue = 0;
+    switch (flagStatus)
+    {
+    case AC_BLUE_FLAG:
+        flagValue = 1;
+        break;
+    case AC_YELLOW_FLAG:
+        flagValue = 2;
+        break;
+    case AC_BLACK_FLAG:
+        flagValue = 3;
+        break;
+    case AC_WHITE_FLAG:
+        flagValue = 4;
+        break;
+    case AC_CHECKERED_FLAG:
+        flagValue = 5;
+        break;
+    case AC_PENALTY_FLAG:
+        flagValue = 6;
+        break;
+    case AC_NO_FLAG:
+    default:
+        break;
+    }
+
+    Q_EMIT sendLedFlagValue(flagValue);
+}
+
 void TelemetryReader::calculateWindFanSpeed()
 {
-    m_lastSpeed = m_speed;
-
-    qint32 wheelAngularSpeedFL = qRound(m_acData.getWheelAngularSpeed(Wheel::FrontLeft));
-    qint32 wheelAngularSpeedFR = qRound(m_acData.getWheelAngularSpeed(Wheel::FrontRight));
-    qint32 wheelAngularSpeedRL = qRound(m_acData.getWheelAngularSpeed(Wheel::RearLeft));
-    qint32 wheelAngularSpeedRR = qRound(m_acData.getWheelAngularSpeed(Wheel::RearRight));
-
-    if ((wheelAngularSpeedFL <= 0)
-            && (wheelAngularSpeedFR <= 0)
-            && (wheelAngularSpeedRL <= 0)
-            && (wheelAngularSpeedRR <= 0))
-    {
-        m_speed = 0;
-    }
-    else
-    {
-        m_speed = qRound(m_acData.getSpeedKmh());
-    }
-
     if (m_speed != m_lastSpeed)
     {
-        Q_EMIT speedUpdated(m_speed);
-
         quint8 windFanValue = static_cast<quint8>(qBound(0, ((m_speed / 3) * 2), 127));
         if (m_lastWindFanValue != windFanValue)
         {
@@ -425,63 +479,3 @@ void TelemetryReader::calculateWindFanSpeed()
         }
     }
 }
-
-//void TelemetryReader::sendWheelSlip()
-//{
-//    qint32 brakeValue = qBound(0, m_maxBrakeValue, 127);
-//    qint32 gasValue = qBound(0, m_maxGasValue, 127);
-
-//    QByteArray data;
-
-//    // Identifier for wheel slip functionality
-//    data.append(ID::WheelSlip);
-//    data.append(QChar(brakeValue));
-//    data.append(QChar(gasValue));
-
-//    // Fill the buffer with 0x00
-//    for (qint32 i = 3; i < 8; ++i)
-//    {
-//        data.append(QChar(0));
-//    }
-
-//    Q_EMIT sendWheelSlipData(data);
-//}
-
-//void TelemetryReader::sendLedFlag()
-//{
-//    qint32 flagStatus = 0;
-
-//    QByteArray data;
-
-//    // Identifier for LED flag functionality
-//    data.append(ID::LEDFlag);
-//    data.append(QChar(flagStatus));
-
-//    // Fill the buffer with 0x00
-//    for (qint32 i = 2; i < 8; ++i)
-//    {
-//        data.append(QChar(0));
-//    }
-
-//    Q_EMIT sendLedFlagData(data);
-//}
-
-//void TelemetryReader::sendWindFan()
-//{
-//    //TODO add adjustable parameter for speed sensitivity
-//    qint32 speed = qBound(0, ((m_speed / 3) * 2), 127);
-
-//    QByteArray data;
-
-//    // Identifier for wind fan functionality
-//    data.append(ID::WindFan);
-//    data.append(QChar(speed));
-
-//    // Fill the buffer with 0x00
-//    for (qint32 i = 2; i < 8; ++i)
-//    {
-//        data.append(QChar(0));
-//    }
-
-//    Q_EMIT sendWindFanData(data);
-//}

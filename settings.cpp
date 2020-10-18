@@ -205,7 +205,10 @@ void Settings::setWheelSlipPort(const QString &port)
         qDebug() << "Settings::setPort(" << port << ")";
         m_wheelSlipPort = port;
         QSettings().setValue(WHEEL_SLIP_PORT, m_wheelSlipPort);
+        Q_EMIT wheelSlipPortChanged();
     }
+
+    m_wheelSlipPortActive = true;
 }
 
 QString Settings::getLedFlagPort() const
@@ -220,7 +223,10 @@ void Settings::setLedFlagPort(const QString &ledFlagPort)
         qDebug() << "Settings::setPort(" << ledFlagPort << ")";
         m_ledFlagPort = ledFlagPort;
         QSettings().setValue(LED_FLAG_PORT, m_ledFlagPort);
+        Q_EMIT ledFlagPortChanged();
     }
+
+    m_ledFlagPortActive = true;
 }
 
 QString Settings::getWindFanPort() const
@@ -235,7 +241,10 @@ void Settings::setWindFanPort(const QString &windFanPort)
         qDebug() << "Settings::setPort(" << windFanPort << ")";
         m_windFanPort = windFanPort;
         QSettings().setValue(WIND_FAN_PORT, m_windFanPort);
+        Q_EMIT windFanPortChanged();
     }
+
+    m_windFanPortActive = true;
 }
 
 qint32 Settings::getUps() const
